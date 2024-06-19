@@ -10,10 +10,10 @@ LGFX lcd;
 #define USE_SERIAL_OUT
 
 const long TOUCH_REPEAT = 80;            // how often (ms) is (long)touch possible
-const int SCREEN_LEFT = 7;
-const int SCREEN_TOP = 32;
-const int SCREEN_WIDTH = 306;
-const int SCREEN_HEIGHT = 160;
+const int SCREEN_LEFT = 5;
+const int SCREEN_TOP = 37;
+const int SCREEN_WIDTH = 310;
+const int SCREEN_HEIGHT = 148;
 
 uint32_t globalCnt = 0;
 long lastMillis;
@@ -101,6 +101,13 @@ TheTouch touch(lcd, &tCallback);
 // TODO
 static LGFX_Sprite sprites[3];
 static LGFX_Sprite daisy;
+LGFX_Sprite background;
+
+String getAllHeap(){
+  char temp[300];
+  sprintf(temp, "Heap: Free:%i, Min:%i, Size:%i, Alloc:%i", ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(), ESP.getMaxAllocHeap());
+  return temp;
+}
 
 void bigScreen(String str, int color, bool clear = true) {
   if (clear) restoreBg();
@@ -118,17 +125,23 @@ void smallScreen(String str, int color = TFT_BLACK) {
   lcd.drawString(str, (lcd.width() >> 1) + 1, (lcd.height() >> 1) + 33);
 }
 
-void initSprites() {
+bool initSprites() {
+  if(!background.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+    Serial.println("Unable to create background");
+    return false;
+  }
   if(!daisy.createSprite(121, 108)) {
-    Serial.println("Unable to create Daisy.");
-    return;
+    Serial.println("Unable to create daisy");
+    return false;
   }
   daisy.setSwapBytes(true);
   daisy.pushImage(0, 0, 121, 108, &daisy_raw[0]);
+  return true;
 }
 
 void restoreBg() {
   long t = millis();
+  // lcd.fillScreen(TFT_BLACK);
   lcd.pushImage(0, 0, lcd.width(), 38, &back_top[0]);
   lcd.pushImage(0, lcd.height()-55, lcd.width(), 54, &back_bottom[0]);
   for(int n=38; n<185; n+=2) {
@@ -140,7 +153,7 @@ void restoreBg() {
 }
 
 void drawDaisy(int x, int y) {
-  daisy.pushSprite(&lcd, x, y, 0x0000);
+  daisy.pushSprite(&background, x, y, 0x0000);
 }
 
 
@@ -151,17 +164,33 @@ void setup() {
   lcd.init();
   lcd.setRotation(ORIENTATION);
   lcd.setSwapBytes(true);
-  initSprites();
+  if(!initSprites()) {
+    while(true) {
+      Serial.println("Out of memory");
+      sleep(4);
+    }
+  }
   lastMillis = millis();
   za = random(256);
   zb = random(256);
   zc = random(256);
   zx = random(256);
+  restoreBg();
 }
 
+int x=-120;
+
 void loop() {
-  restoreBg();
-  sleep(10); // DO NOTHING
-  drawDaisy((lcd.width() >> 1) - 82, 56);
-  drawDaisy((lcd.width() >> 1) - 72, 64);
+  long t=millis();
+  // restoreBg();
+  //lcd.fillRect(SCREEN_LEFT, SCREEN_TOP, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_CYAN);
+  // Serial.println(getAllHeap());
+  background.clear(TFT_BLACK);
+  drawDaisy(x, 16);
+  background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
+  x+=1;
+  if(x > 310) x = -120;
+  do {
+    yield();
+  } while((millis()-16) < t);
 }
