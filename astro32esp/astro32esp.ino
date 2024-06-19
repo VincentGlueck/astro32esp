@@ -3,17 +3,20 @@
 
 #include "background.h"
 #include "daisy.h"
+#include "gfx.h"
 
 LGFX lcd;
 
 #define ORIENTATION 3 // 3=POWER left 1=POWER right
 #define USE_SERIAL_OUT
 
+#define EXTRA_BOTTOM 28
+
 const long TOUCH_REPEAT = 80;            // how often (ms) is (long)touch possible
 const int SCREEN_LEFT = 5;
 const int SCREEN_TOP = 37;
 const int SCREEN_WIDTH = 310;
-const int SCREEN_HEIGHT = 148;
+const int SCREEN_HEIGHT = 148 + EXTRA_BOTTOM;
 
 uint32_t globalCnt = 0;
 long lastMillis;
@@ -178,6 +181,12 @@ void setup() {
   restoreBg();
 }
 
+void restore_Background() {
+  background.setSwapBytes(true);
+  background.fillRect(0, 0, background.width(), background.height()-EXTRA_BOTTOM, TFT_RED);
+  background.pushImage(-SCREEN_LEFT, background.height()-EXTRA_BOTTOM, lcd.width(), EXTRA_BOTTOM, &back_bottom[0]);
+}
+
 int x=-120;
 
 void loop() {
@@ -185,8 +194,8 @@ void loop() {
   // restoreBg();
   //lcd.fillRect(SCREEN_LEFT, SCREEN_TOP, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_CYAN);
   // Serial.println(getAllHeap());
-  background.clear(TFT_BLACK);
-  drawDaisy(x, 16);
+  restore_Background();
+  drawDaisy(x, 48);
   background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
   x+=1;
   if(x > 310) x = -120;
