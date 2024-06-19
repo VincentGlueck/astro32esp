@@ -4,6 +4,7 @@
 #include "background.h"
 #include "daisy.h"
 #include "gfx.h"
+#include "sprites_ground.h"
 
 LGFX lcd;
 
