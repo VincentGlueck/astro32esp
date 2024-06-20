@@ -2,9 +2,9 @@
 #include "TheTouch.h"
 
 #include "background.h"
-#include "daisy.h"
 #include "gfx.h"
 #include "sprites_ground.h"
+#include "sprites.cpp"
 
 LGFX lcd;
 
@@ -19,6 +19,8 @@ const int SCREEN_TOP = 37;
 const int SCREEN_WIDTH = 310;
 const int SCREEN_HEIGHT = 148 + EXTRA_BOTTOM;
 
+bool initDone = false;
+
 uint32_t globalCnt = 0;
 long lastMillis;
 long lastTouch = 0;
@@ -27,6 +29,8 @@ bool isCalibrated = false;
 uint8_t mode = 0;
 long nextMode = millis() + 30000;
 uint8_t modeDone = 0xff;
+
+Daisy* daisy;
 
 enum UserInput { Nothing = 0,
                  Up = 1,
@@ -104,7 +108,6 @@ TheTouch touch(lcd, &tCallback);
 
 // TODO
 static LGFX_Sprite sprites[3];
-static LGFX_Sprite daisy;
 LGFX_Sprite background;
 
 String getAllHeap(){
@@ -134,12 +137,14 @@ bool initSprites() {
     Serial.println("Unable to create background");
     return false;
   }
+  /*
   if(!daisy.createSprite(121, 108)) {
     Serial.println("Unable to create daisy");
     return false;
   }
   daisy.setSwapBytes(true);
   daisy.pushImage(0, 0, 121, 108, &daisy_raw[0]);
+  */
   return true;
 }
 
@@ -157,7 +162,7 @@ void restoreBg() {
 }
 
 void drawDaisy(int x, int y) {
-  daisy.pushSprite(&background, x, y, 0x0000);
+  //daisy.pushSprite(&background, x, y, 0x0000);
 }
 
 
@@ -184,23 +189,33 @@ void setup() {
 
 void restore_Background() {
   background.setSwapBytes(true);
-  background.fillRect(0, 0, background.width(), background.height()-EXTRA_BOTTOM, TFT_RED);
+  background.fillRect(0, 0, background.width(), background.height()-EXTRA_BOTTOM, TFT_BLACK);
   background.pushImage(-SCREEN_LEFT, background.height()-EXTRA_BOTTOM, lcd.width(), EXTRA_BOTTOM, &back_bottom[0]);
 }
 
-int x=-120;
+void initAbstractSprites() {
+  daisy = new Daisy();
+}
+
+void doTicks() {
+  daisy->onTick();
+}
 
 void loop() {
+  if(!initDone) {
+    initAbstractSprites();
+    daisy->setPos(Point(-120, 48));
+    initDone = true;
+  }
   long t=millis();
-  // restoreBg();
-  //lcd.fillRect(SCREEN_LEFT, SCREEN_TOP, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_CYAN);
-  // Serial.println(getAllHeap());
   restore_Background();
-  drawDaisy(x, 48);
+  daisy->drawOnSprite(&background);
   background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
-  x+=1;
-  if(x > 310) x = -120;
+  //Serial.printf("daisy x, y: %d, %d\n", daisy->getPos().x, daisy->getPos().y);
+  doTicks();
+  //sleep(30);
   do {
     yield();
   } while((millis()-16) < t);
+  
 }

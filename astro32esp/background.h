@@ -3,6 +3,8 @@
 // Image Size     : 320x38 pixels
 // Memory usage   : 24320 bytes
 
+#ifndef _BACKGROUND_H_
+#define _BACKGROUND_H_
 
 #if defined(__AVR__)
     #include <avr/pgmspace.h>
@@ -1902,3 +1904,5 @@ const unsigned short back_left[10] PROGMEM={
 const unsigned short back_right[10] PROGMEM={
 0x8A83, 0xBB64, 0xBB64, 0xBB64, 0xBB64, 0x8A83, 0xBB64, 0xBB64, 0xBB64, 0xBB64
 };
+
+#endif
