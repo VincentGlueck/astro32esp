@@ -8,6 +8,10 @@ AbstractSprite::AbstractSprite(String _name, uint8_t _animations = 1) {
   keepInMemory = false;
   animCnt = 0;
   animations = _animations;
+  za = random(256);
+  zb = random(256);
+  zc = random(256);
+  zx = random(256);
   sprites = new SingleSprite[animations];
 }
 
@@ -63,6 +67,14 @@ Dimension AbstractSprite::getDimension(uint8_t whichAnim) {
     return sprites[whichAnim].dimension;
   }
   return Dimension(-1, -1);
+}
+
+uint8_t AbstractSprite::rnd() {
+  zx++;
+  za = (za ^ zc ^ zx);
+  zb = (zb + za);
+  zc = ((zc + (zb >> 1)) ^ za);
+  return zc;
 }
 
 

@@ -2,9 +2,9 @@
 #include "TheTouch.h"
 
 #include "background.h"
-#include "gfx.h"
 #include "sprites_ground.h"
 #include "sprites.cpp"
+#include "title.cpp"
 
 LGFX lcd;
 
@@ -31,6 +31,7 @@ long nextMode = millis() + 30000;
 uint8_t modeDone = 0xff;
 
 Daisy* daisy;
+Title* title;
 
 enum UserInput { Nothing = 0,
                  Up = 1,
@@ -137,20 +138,11 @@ bool initSprites() {
     Serial.println("Unable to create background");
     return false;
   }
-  /*
-  if(!daisy.createSprite(121, 108)) {
-    Serial.println("Unable to create daisy");
-    return false;
-  }
-  daisy.setSwapBytes(true);
-  daisy.pushImage(0, 0, 121, 108, &daisy_raw[0]);
-  */
   return true;
 }
 
 void restoreBg() {
   long t = millis();
-  // lcd.fillScreen(TFT_BLACK);
   lcd.pushImage(0, 0, lcd.width(), 38, &back_top[0]);
   lcd.pushImage(0, lcd.height()-55, lcd.width(), 54, &back_bottom[0]);
   for(int n=38; n<185; n+=2) {
@@ -159,10 +151,6 @@ void restoreBg() {
   }
   t = millis() - t;
   Serial.printf("restoreBg() took %d ms\n", t);
-}
-
-void drawDaisy(int x, int y) {
-  //daisy.pushSprite(&background, x, y, 0x0000);
 }
 
 
@@ -195,21 +183,25 @@ void restore_Background() {
 
 void initAbstractSprites() {
   daisy = new Daisy();
+  title = new Title();
 }
 
 void doTicks() {
   daisy->onTick();
+  title->onTick();
 }
 
 void loop() {
   if(!initDone) {
     initAbstractSprites();
     daisy->setPos(Point(-120, 48));
+    title->setPos(Point(-5, 30));
     initDone = true;
   }
   long t=millis();
   restore_Background();
   daisy->drawOnSprite(&background);
+  title->drawAllOnSprite(&background);
   background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
   //Serial.printf("daisy x, y: %d, %d\n", daisy->getPos().x, daisy->getPos().y);
   doTicks();

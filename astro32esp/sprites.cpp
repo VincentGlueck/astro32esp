@@ -2,7 +2,6 @@
 #define _SPRITES_CPP_
 
 #include "AbstractSprite.h"
-#include "Arduino.h"
 #include "daisy.h"
 
 class Daisy : public AbstractSprite {

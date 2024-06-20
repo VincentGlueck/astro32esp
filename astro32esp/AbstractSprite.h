@@ -31,6 +31,7 @@ public:
   void addSprite(SingleSprite _sprite);
   bool isLoaded();
   void setKeepInMemory(bool _keep);
+  uint8_t rnd();
   
   virtual void onTick() {};
 
@@ -46,6 +47,7 @@ protected:
   String name;
   LGFX_Sprite lgfxSprite;
   SingleSprite* sprites;
+  uint8_t za, zb, zc, zx;
 
 };
 
