@@ -220,8 +220,8 @@ void loop() {
   if(!initDone) {
     initAbstractSprites();
     daisy->setPos(Point(-120, 28));
-    title->setPos(Point(-5, 30));
-    // testSprite();
+    title->setPos(Point(-5, 50));
+    //testSprite();
     initDone = true;
   }
   long t=millis();

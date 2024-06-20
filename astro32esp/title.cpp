@@ -11,6 +11,7 @@
 {'R', 33, 29, 0, 0, title_R},
 {'O', 33, 26, 0, 0, title_O},
 {' ', 25, 21, 0, 0, logo_Mc},
+{'c', 14, 16, 0, 0, logo_c},
 {'C', 28, 26, 0, 0, title_C},
 {'H', 34, 31, 0, 0, title_H},
 {'I', 18, 26, 0, 0, title_I},
@@ -22,14 +23,19 @@
 
 
 class Title : public AbstractSprite {
+private:
+  int dt = 1;
+  int ddt = 1;
+
 public:
-  Title() : AbstractSprite("title", 13) {
+  Title() : AbstractSprite("title", 14) {
     addSprite(SingleSprite(Dimension(34, 29), (short unsigned int*)title_A));
     addSprite(SingleSprite(Dimension(27, 28), (short unsigned int*)title_S));
     addSprite(SingleSprite(Dimension(24, 26), (short unsigned int*)title_T));
     addSprite(SingleSprite(Dimension(33, 29), (short unsigned int*)title_R));
     addSprite(SingleSprite(Dimension(33, 26), (short unsigned int*)title_O));
     addSprite(SingleSprite(Dimension(25, 21), (short unsigned int*)logo_Mc));
+    addSprite(SingleSprite(Dimension(14, 16), (short unsigned int*)logo_c));
     addSprite(SingleSprite(Dimension(28, 26), (short unsigned int*)title_C));
     addSprite(SingleSprite(Dimension(34, 31), (short unsigned int*)title_H));
     addSprite(SingleSprite(Dimension(18, 26), (short unsigned int*)title_I));
@@ -44,7 +50,15 @@ public:
     tick--;
     if(tick < 1) tick = 60;
     pos.x-=2;
-    if(pos.x < -220) pos.x = 220;
+    if(pos.x < -220) {
+      pos.x = 220;
+      dt = dt + ddt;
+      if(dt > 4) {
+        ddt = -1;
+      } else if (dt < 2) {
+        ddt = 1;
+      }
+    }
   }
 
   void drawAllOnSprite(LGFX_Sprite* background) {
@@ -53,7 +67,7 @@ public:
     for(int n=0; n<animations; n++) {
       float radian = TWO_PI / (60 / (float)(t));
       float titleY = pos.y + (29 * sin(radian));
-      t+=4;
+      t+=dt;
       if(t >= 60) t-=60;
       if(lgfxSprite.createSprite(sprites[n].dimension.width, sprites[n].dimension.height)) {
         lgfxSprite.setSwapBytes(true);
