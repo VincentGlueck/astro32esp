@@ -2,12 +2,13 @@
 
 AbstractSprite::AbstractSprite(String _name, uint8_t _animations = 1) {
   name = _name;
+  animations = _animations;
   tick = 0;
   loadedAnims = 0;
   currentAnimLoaded = 0xff;
   keepInMemory = false;
   animCnt = 0;
-  animations = _animations;
+  status = NORMAL;
   za = random(256);
   zb = random(256);
   zc = random(256);
@@ -40,10 +41,11 @@ void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
     Serial.printf("FATAL, sprite '%s' has only loaded %d of %d!", name, loadedAnims, animations);
     sleep(10000);
   }
+  if(status == READY) return; // sprite is waiting
   if(!keepInMemory || (currentAnimLoaded != animCnt)) {
     if(lgfxSprite.createSprite(sprites[animCnt].dimension.width, sprites[animCnt].dimension.height)) {
       lgfxSprite.setSwapBytes(true);
-      lgfxSprite.pushImage(0, 0, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
+      lgfxSprite.pushImage(sprites[animCnt].delta.x, sprites[animCnt].delta.y, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
     } else {
       Serial.println("Out of memory!");
       sleep(10000);
@@ -75,6 +77,18 @@ uint8_t AbstractSprite::rnd() {
   zb = (zb + za);
   zc = ((zc + (zb >> 1)) ^ za);
   return zc;
+}
+
+Status AbstractSprite::getStatus() {
+  return status;
+}
+
+void AbstractSprite::setStatus(Status _status) {
+  status = _status;
+}
+
+uint8_t AbstractSprite::getAnimCnt() {
+  return animCnt;
 }
 
 

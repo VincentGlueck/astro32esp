@@ -51,8 +51,8 @@ public:
     int titleX = pos.x;
     int t = tick;
     for(int n=0; n<animations; n++) {
-      float radian = PI / (60 / (float)(t));
-      float titleY = pos.y + (40 * sin(radian));
+      float radian = TWO_PI / (60 / (float)(t));
+      float titleY = pos.y + (29 * sin(radian));
       t+=4;
       if(t >= 60) t-=60;
       if(lgfxSprite.createSprite(sprites[n].dimension.width, sprites[n].dimension.height)) {

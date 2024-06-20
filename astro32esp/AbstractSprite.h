@@ -3,6 +3,13 @@
 
 #include "lgfx_user.h"
 
+enum Status {
+  NORMAL,
+  READY,
+  COLLIDED,
+  VANISHED
+};
+
 struct Point {
   int x;
   int y;
@@ -16,6 +23,7 @@ struct Dimension {
 struct SingleSprite {
   Dimension dimension;
   unsigned short* ptr;
+  Point delta = Point(0,0);
 };
 
 class AbstractSprite {
@@ -32,6 +40,9 @@ public:
   bool isLoaded();
   void setKeepInMemory(bool _keep);
   uint8_t rnd();
+  uint8_t getAnimCnt();
+  Status getStatus();
+  void setStatus(Status _status);
   
   virtual void onTick() {};
 
@@ -47,6 +58,7 @@ protected:
   String name;
   LGFX_Sprite lgfxSprite;
   SingleSprite* sprites;
+  Status status;
   uint8_t za, zb, zc, zx;
 
 };

@@ -2,7 +2,6 @@
 #include "TheTouch.h"
 
 #include "background.h"
-#include "sprites_ground.h"
 #include "sprites.cpp"
 #include "title.cpp"
 
@@ -32,6 +31,7 @@ uint8_t modeDone = 0xff;
 
 Daisy* daisy;
 Title* title;
+Mill* mill;
 
 enum UserInput { Nothing = 0,
                  Up = 1,
@@ -184,23 +184,50 @@ void restore_Background() {
 void initAbstractSprites() {
   daisy = new Daisy();
   title = new Title();
+  mill = new Mill();
 }
 
 void doTicks() {
   daisy->onTick();
   title->onTick();
+  mill->onTick();
+  if((mill->getStatus() == READY) && (rnd() & 0x3f) == 0x3f) {
+    delete mill;
+    mill = new Mill();
+  }
+}
+
+void testSprite() {
+  mill->setStatus(NORMAL);
+  for(int n=0; n<50; n++) {
+    mill->onTick();
+    mill->setPos(Point(20, 10));
+    restore_Background();
+    mill->drawOnSprite(&background);
+    background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
+    lcd.setTextColor(TFT_WHITE);
+    lcd.drawFastHLine(0, 40, 320);
+    lcd.drawFastHLine(0, 50, 320);
+    lcd.drawFastHLine(0, 60, 320);
+    lcd.drawFastHLine(0, 70, 320);
+    lcd.drawFastHLine(0, 80, 320);
+    lcd.drawString(String(mill->getAnimCnt()), 200, 100, 4);
+    delay(1000);
+  }
 }
 
 void loop() {
   if(!initDone) {
     initAbstractSprites();
-    daisy->setPos(Point(-120, 48));
+    daisy->setPos(Point(-120, 28));
     title->setPos(Point(-5, 30));
+    // testSprite();
     initDone = true;
   }
   long t=millis();
   restore_Background();
   daisy->drawOnSprite(&background);
+  mill->drawOnSprite(&background);
   title->drawAllOnSprite(&background);
   background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
   //Serial.printf("daisy x, y: %d, %d\n", daisy->getPos().x, daisy->getPos().y);
