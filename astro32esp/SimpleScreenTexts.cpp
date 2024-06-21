@@ -30,14 +30,12 @@ void SimpleScreenTexts::spriteBig(String str, LGFX_Sprite sprite, int color) {
   sprite.setFont(&fonts::DejaVu24);
   sprite.setTextDatum(textdatum_t::middle_center);
   sprite.setTextColor(color);
-  sprite.drawString(str, sprite.width() >> 1, sprite.height() >> 1);
-  sprite.drawString(str, 1 + (sprite.width() >> 1), 1 + (sprite.height() >> 1));
+  sprite.drawString(str, sprite.width() >> 1, (sprite.height() >> 1) - 16);
 }
 
 void SimpleScreenTexts::spriteSmall(String str, LGFX_Sprite sprite, int color) {
   sprite.setFont(&fonts::DejaVu12);
   sprite.setTextDatum(textdatum_t::middle_center);
   sprite.setTextColor(color);
-  sprite.drawString(str, sprite.width() >> 1, (sprite.height() >> 1) + 32);
-  sprite.drawString(str, (sprite.width() >> 1) + 1, (sprite.height() >> 1) + 33);
+  sprite.drawString(str, sprite.width() >> 1, (sprite.height() >> 1) + 12);
 }

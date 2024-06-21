@@ -5,18 +5,14 @@ AbstractSprite::AbstractSprite(String _name, uint8_t _animations = 1) {
   animations = _animations;
   tick = 0;
   loadedAnims = 0;
-  currentAnimLoaded = 0xff;
   keepInMemory = false;
   animCnt = 0;
   status = NORMAL;
-  za = random(256);
-  zb = random(256);
-  zc = random(256);
-  zx = random(256);
   sprites = new SingleSprite[animations];
 }
 
 AbstractSprite::~AbstractSprite() {
+  if(keepInMemory) lgfxSprite.deleteSprite();
   delete[] sprites;
 }
 
@@ -37,27 +33,23 @@ void AbstractSprite::addSprite(SingleSprite _sprite) {
 }
 
 void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
+  bool outOfMemory = false;
   if(loadedAnims < animations) {
     Serial.printf("FATAL, sprite '%s' has only loaded %d of %d!", name, loadedAnims, animations);
     sleep(10000);
   }
   if(status == READY) return; // sprite is waiting
-  if(!keepInMemory || (currentAnimLoaded != animCnt)) {
+  if(!keepInMemory) {
     if(lgfxSprite.createSprite(sprites[animCnt].dimension.width, sprites[animCnt].dimension.height)) {
       lgfxSprite.setSwapBytes(true);
       lgfxSprite.pushImage(sprites[animCnt].delta.x, sprites[animCnt].delta.y, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
     } else {
-      Serial.println("Out of memory!");
-      sleep(10000);
+      Serial.println("AbstractSprite::Out of memory");
+      outOfMemory = true;
     }
   }
-  lgfxSprite.pushSprite(background, pos.x, pos.y, 0x0000);
-  if(keepInMemory) {
-    currentAnimLoaded = animCnt;
-  } else {
-    lgfxSprite.deleteSprite();
-    currentAnimLoaded = 0xff;
-  }
+  if(!outOfMemory) lgfxSprite.pushSprite(background, pos.x, pos.y, 0x0000);
+  if(!keepInMemory) lgfxSprite.deleteSprite();
 }
 
 bool AbstractSprite::isLoaded() {
@@ -69,14 +61,6 @@ Dimension AbstractSprite::getDimension(uint8_t whichAnim) {
     return sprites[whichAnim].dimension;
   }
   return Dimension(-1, -1);
-}
-
-uint8_t AbstractSprite::rnd() {
-  zx++;
-  za = (za ^ zc ^ zx);
-  zb = (zb + za);
-  zc = ((zc + (zb >> 1)) ^ za);
-  return zc;
 }
 
 Status AbstractSprite::getStatus() {

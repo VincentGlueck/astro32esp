@@ -2,6 +2,10 @@
 #define _ABSTRACT_SPRITE_H
 
 #include "lgfx_user.h"
+#include "FastRandom.hpp"
+
+#define PLAYFIELD_WIDTH 310
+#define PLAYFIELD_HEIGHT 176
 
 enum Status {
   NORMAL,
@@ -30,8 +34,10 @@ class AbstractSprite {
 public:
 
   AbstractSprite(String _name, uint8_t _animations);
+  AbstractSprite();
   ~AbstractSprite();
   
+  static AbstractSprite NO_SPRITE;
   Point getPos();
   void setPos(Point _pos);
   Dimension getDimension(uint8_t whichAnim);
@@ -39,7 +45,6 @@ public:
   void addSprite(SingleSprite _sprite);
   bool isLoaded();
   void setKeepInMemory(bool _keep);
-  uint8_t rnd();
   uint8_t getAnimCnt();
   Status getStatus();
   void setStatus(Status _status);
@@ -49,17 +54,17 @@ public:
 
 protected:
   uint8_t animCnt;
-  uint8_t currentAnimLoaded;
   bool keepInMemory;
   uint8_t loadedAnims;
-  uint8_t animations;
+  uint8_t animations = 0;
   uint16_t tick;
   Point pos;
   String name;
   LGFX_Sprite lgfxSprite;
   SingleSprite* sprites;
   Status status;
-  uint8_t za, zb, zc, zx;
+  int usr_dx, usr_ddx, usr_dy, usr_ddy, usr_a, usr_b, usr_c;
+  bool usr_flag0, usr_flag1;
 
 };
 

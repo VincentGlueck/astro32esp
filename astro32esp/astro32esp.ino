@@ -1,8 +1,10 @@
+#include "FastRandom.hpp"
 #include "background.h"
 #include "sprites.hpp"
 #include "title.hpp"
 #include "SimpleScreenTexts.h"
 #include "InputController.h"
+#include "Scroller.h"
 
 LGFX lcd;
 SimpleScreenTexts* screenTexts;
@@ -15,8 +17,8 @@ SimpleScreenTexts* screenTexts;
 const long TOUCH_REPEAT = 80;            // how often (ms) is (long)touch possible
 const int SCREEN_LEFT = 5;
 const int SCREEN_TOP = 37;
-const int SCREEN_WIDTH = 310;
-const int SCREEN_HEIGHT = 148 + EXTRA_BOTTOM;
+const int SCREEN_WIDTH = PLAYFIELD_WIDTH;
+const int SCREEN_HEIGHT = PLAYFIELD_HEIGHT;
 
 uint32_t globalCnt = 0;
 long lastMillis;
@@ -25,23 +27,15 @@ uint8_t mode = 0;
 long nextMode = millis() + 30000;
 uint8_t modeDone = 0xff;
 
-lgfx::touch_point_t *touchPoint;
 InputController* inputController;
 
 Daisy* daisy;
 Title* title;
-Mill* mill;
-
-uint8_t za, zb, zc, zx, counter;
-uint8_t rnd() {
-  zx++;
-  za = (za ^ zc ^ zx);
-  zb = (zb + za);
-  zc = ((zc + (zb >> 1)) ^ za);
-  return zc;
-}
+Scroller* scroller;
+GetReady* getReady;
 
 uint16_t score;
+uint8_t miscMode;
 
 LGFX_Sprite background;
 
@@ -59,16 +53,17 @@ void clearBackground() {
   background.pushImage(-SCREEN_LEFT, background.height()-EXTRA_BOTTOM, lcd.width(), EXTRA_BOTTOM, &back_bottom[0]);
 }
 
+void drawPlayfield() {
+  background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
+}
+
 void restoreBg() {
-  long t = millis();
   lcd.pushImage(0, 0, lcd.width(), 38, &back_top[0]);
   lcd.pushImage(0, lcd.height()-55, lcd.width(), 54, &back_bottom[0]);
   for(int n=38; n<185; n+=2) {
     lcd.pushImage(0,n, 5, 2, &back_left[0]);
     lcd.pushImage(lcd.width()-5, n, 5, 2, &back_right[0]);
   }
-  t = millis() - t;
-  Serial.printf("restoreBg() took %d ms\n", t);
 }
 
 bool initBackground() {
@@ -92,30 +87,44 @@ void calibrateTouch() {
   if (modeDone != mode) {
     restoreBg();
     modeDone = mode;
+    miscMode = 0;
     nextMode = millis() + 5000;
-    mill->setStatus(NORMAL);
   }
   clearBackground();
-  mill->onTick();
-  if((mill->getStatus() == READY) && (rnd() & 0x3f) == 0x3f) {
-    delete mill;
-    mill = new Mill();
-  }
+  daisy->drawOnSprite(&background);
+  daisy->onTick();
   screenTexts->spriteBig("Calibrate touch?", background, TFT_WHITE);
-  if ((millis() + 2000) > nextMode) screenTexts->spriteSmall("Touch anywhere...", background);
-  mill->drawOnSprite(&background);
-  background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
+  if ((millis() + 3500) > nextMode) {
+    screenTexts->spriteSmall("Touch anywhere...", background);
+    miscMode = 1;
+  }
+  drawPlayfield();
   inputController->poll();
   if (inputController->getInput() != Nothing) {
     inputController->calibrate();
+    clearBackground();
+    drawPlayfield();
   }
 }
 
 void menu() {
-  // TODO there currently is no menu
   if (modeDone != mode) {
-    // restoreBg();
+    restoreBg();
+    getReady = new GetReady();
     modeDone = mode;
+    lastMillis = millis() + 3000;
+  }
+  clearBackground();
+  scroller->onTick();
+  title->drawAllOnSprite(&background);
+  if(getReady->getStatus() == NORMAL) getReady->drawOnSprite(&background);
+  getReady->onTick();
+  title->onTick();
+  // if(millis() > lastMillis) screenTexts->spriteBig("Touch to start", background, TFT_WHITE);
+  drawPlayfield();
+  inputController->poll();
+  if (inputController->getInput() != Nothing) {
+    delete getReady;
     mode = 3;
   }
 }
@@ -126,8 +135,8 @@ void gameOver() {
   } else if ((globalCnt & 0x3fff) == 0x3fff) {
     int color = (globalCnt & 0x7fff) == 0x7fff ? TFT_WHITE : TFT_DARKGRAY;
     clearBackground();
-    screenTexts->spriteBig("Game over", &background, color);
-    background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);    
+    // screenTexts->spriteBig("Game over", &background, color);
+    drawPlayfield();
   }
   if ((globalCnt & 0x7f) == 0x7f) {
     inputController->poll();
@@ -140,9 +149,8 @@ void gameOver() {
 void initSprites() {
   daisy = new Daisy();
   title = new Title();
-  mill = new Mill();
   daisy->setPos(Point(-120, 20));
-  title->setPos(Point(-5, 50));
+  title->setPos(Point(320, 35));
   restoreBg();
 }
 
@@ -158,13 +166,9 @@ void setup() {
       sleep(4);
     }
   }
-  za = random(256);
-  zb = random(256);
-  zc = random(256);
-  zx = random(256);
-  touchPoint = (lgfx::touch_point_t*)malloc(sizeof(lgfx::touch_point_t));
   screenTexts = new SimpleScreenTexts(lcd);
   inputController = new InputController(lcd);
+  scroller = new Scroller(background);
   initSprites();
   lastMillis = millis();
 }
@@ -172,28 +176,24 @@ void setup() {
 void doTicks() {
   daisy->onTick();
   title->onTick();
-  mill->onTick();
-  if((mill->getStatus() == READY) && (rnd() & 0x3f) == 0x3f) {
-    delete mill;
-    mill = new Mill();
-  }
 }
 
 void testSprite() {
-  mill->setStatus(NORMAL);
+  //mill->setStatus(NORMAL);
   for(int n=0; n<50; n++) {
-    mill->onTick();
-    mill->setPos(Point(20, 10));
+    //mill->onTick();
+    //mill->setPos(Point(20, 10));
     clearBackground();
-    mill->drawOnSprite(&background);
-    background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
+    scroller->onTick();
+    //mill->drawOnSprite(&background);
+    drawPlayfield();
     lcd.setTextColor(TFT_WHITE);
     lcd.drawFastHLine(0, 40, 320);
     lcd.drawFastHLine(0, 50, 320);
     lcd.drawFastHLine(0, 60, 320);
     lcd.drawFastHLine(0, 70, 320);
     lcd.drawFastHLine(0, 80, 320);
-    lcd.drawString(String(mill->getAnimCnt()), 200, 100, 4);
+    //lcd.drawString(String(mill->getAnimCnt()), 200, 100, 4);
     delay(1000);
   }
 }
@@ -204,19 +204,20 @@ void mainGame() {
     modeDone = mode;
   } else {
     clearBackground();
-    daisy->drawOnSprite(&background);
-    mill->drawOnSprite(&background);
-    title->drawAllOnSprite(&background);
-    background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
+    scroller->onTick();
+    drawPlayfield();
     inputController->poll();
     doTicks();
   }
 }
 
 void loop() {
+  bool first = true;
   if (millis() > nextMode) {
     if (mode < 2) mode++; else nextMode = 1 << 30;
+#ifdef USE_SERIAL_OUT    
     Serial.printf("mode now: %d\n", mode);
+#endif    
   }
   long t=millis();
   switch (mode) {

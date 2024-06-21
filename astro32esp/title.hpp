@@ -4,24 +4,6 @@
 #include "AbstractSprite.h"
 #include "gfx.h"
 
-/*
-{'A', 34, 29, 0, 0, title_A},
-{'S', 27, 28, 0, 0, title_S},
-{'T', 24, 26, 0, 0, title_T},
-{'R', 33, 29, 0, 0, title_R},
-{'O', 33, 26, 0, 0, title_O},
-{' ', 25, 21, 0, 0, logo_Mc},
-{'c', 14, 16, 0, 0, logo_c},
-{'C', 28, 26, 0, 0, title_C},
-{'H', 34, 31, 0, 0, title_H},
-{'I', 18, 26, 0, 0, title_I},
-{'C', 30, 28, 0, 0, title_C_1},
-{'K', 34, 31, 0, 0, title_K},
-{'E', 27, 29, 0, 0, title_E},
-{'N', 34, 31, 0, 0, title_N},
-*/
-
-
 class Title : public AbstractSprite {
 private:
   int dt = 1;
@@ -50,8 +32,8 @@ public:
     tick--;
     if(tick < 1) tick = 60;
     pos.x-=2;
-    if(pos.x < -220) {
-      pos.x = 220;
+    if(pos.x < -160) {
+      pos.x = 210;
       dt = dt + ddt;
       if(dt > 4) {
         ddt = -1;
