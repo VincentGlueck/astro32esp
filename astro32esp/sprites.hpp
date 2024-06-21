@@ -2,7 +2,6 @@
 #define _SPRITES_HPP_
 
 #include "AbstractSprite.h"
-#include "daisy.h"
 #include "sprites_ground.h"
 #include "FastRandom.hpp"
 
@@ -100,10 +99,10 @@ public:
 class Fence : public AbstractSprite {
 public:
   Fence() : AbstractSprite("Fence", 2) {
-    addSprite(SingleSprite(Dimension(21, 24), (short unsigned int*)fence02));
-    addSprite(SingleSprite(Dimension(21, 24), (short unsigned int*)fence01));
+    addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence02));
+    addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence01));
     pos.x = 305;
-    pos.y = 127;
+    pos.y = 108;
     status = NORMAL;
   }
 
@@ -111,7 +110,7 @@ public:
     if(status == NORMAL) {
       animCnt = COLLIDED ? 1 : 0;
       pos.x--;
-      if(pos.x < -15) {
+      if(pos.x < -52) {
         status = READY;
         pos.x = 0xffff;
       }
@@ -122,15 +121,15 @@ public:
 class Corn : public AbstractSprite {
 public:
   Corn() : AbstractSprite("Corn", 2) {
-    addSprite(SingleSprite(Dimension(8, 16), (short unsigned int*)corn01));
-    addSprite(SingleSprite(Dimension(10, 16), (short unsigned int*)corn02));
+    addSprite(SingleSprite(Dimension(13, 28), (short unsigned int*)corn01));
+    addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02));
     status = NORMAL;
-    pos.y = 136;
+    pos.y = 125;
   }
 
   void onTick() {
     pos.x--;
-    if(pos.x < -3) {
+    if(pos.x < -9) {
       status = READY;
       pos.x = 0xffff;
     }

@@ -4,10 +4,10 @@
 #include "sprites.hpp"
 
 #define MAX_GROUND_SPRITES 20
-#define MIN_NEXT_TICKS 8
-#define MIN_NEXT_MILL 170
-#define MIN_NEXT_FENCE 80
-#define MIN_NEXT_CORN 110
+#define MIN_NEXT_TICKS 15
+#define MIN_NEXT_MILL 40
+#define MIN_NEXT_FENCE 90
+#define MIN_NEXT_CORN 130
 //#define MIN_NEXT_DECORATION 45
 
 class Scroller {
