@@ -28,7 +28,6 @@ public:
       if(((tick & 0x3f) == 0x3f) && (usr_ddx < 0)) usr_ddx++;
       if((pos.x+65) > (PLAYFIELD_WIDTH >> 1)) {
         pos.x = (PLAYFIELD_WIDTH >> 1) - 65;
-        Serial.printf("pos.x now %d\n", pos.x);
         usr_a = pos.y;
         usr_flag0 = false;
       }

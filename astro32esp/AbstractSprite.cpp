@@ -6,13 +6,14 @@ AbstractSprite::AbstractSprite(String _name, uint8_t _animations = 1) {
   tick = 0;
   loadedAnims = 0;
   keepInMemory = false;
+  loaded = false;
   animCnt = 0;
   status = NORMAL;
   sprites = new SingleSprite[animations];
 }
 
 AbstractSprite::~AbstractSprite() {
-  if(keepInMemory) lgfxSprite.deleteSprite();
+  if(keepInMemory && loaded) lgfxSprite.deleteSprite();
   delete[] sprites;
 }
 
@@ -29,7 +30,11 @@ void AbstractSprite::setPos(Point _pos) {
 }
 
 void AbstractSprite::addSprite(SingleSprite _sprite) {
-  if(loadedAnims < animations) sprites[loadedAnims++] = _sprite;
+  if(loadedAnims < animations) {
+    sprites[loadedAnims++] = _sprite;
+  } else {
+    Serial.printf("Attempt to load more than %d sprites for %s!\n", animations, name);
+  }
 }
 
 void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
@@ -39,17 +44,20 @@ void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
     sleep(10000);
   }
   if(status == READY) return; // sprite is waiting
-  if(!keepInMemory) {
+  if(!keepInMemory || !loaded) {
     if(lgfxSprite.createSprite(sprites[animCnt].dimension.width, sprites[animCnt].dimension.height)) {
       lgfxSprite.setSwapBytes(true);
       lgfxSprite.pushImage(sprites[animCnt].delta.x, sprites[animCnt].delta.y, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
+      loaded = true;
     } else {
       Serial.println("AbstractSprite::Out of memory");
       outOfMemory = true;
     }
   }
-  if(!outOfMemory) lgfxSprite.pushSprite(background, pos.x, pos.y, 0x0000);
-  if(!keepInMemory) lgfxSprite.deleteSprite();
+  if(!outOfMemory) {
+    lgfxSprite.pushSprite(background, pos.x, pos.y, 0x0000);
+    if(!keepInMemory) lgfxSprite.deleteSprite();
+  }
 }
 
 bool AbstractSprite::isLoaded() {

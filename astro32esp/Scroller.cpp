@@ -57,7 +57,6 @@ uint8_t Scroller::addGroundObject() {
     case 5: return createFence(idx);
     case 6: {
       if(waitCorn > 0) return 0;
-      waitCorn = MIN_NEXT_CORN;
       int x = 315;
       for(int n=0; n<2+rnd(7); n++) {
         createCorn(idx);
@@ -66,10 +65,12 @@ uint8_t Scroller::addGroundObject() {
         idx = getFreeSlot();
         if(idx == -1) break;
       }
-      waitMill = 0;
+      waitCorn = MIN_NEXT_CORN;
+      waitMill = 15;
       if(waitFence < MIN_NEXT_FENCE) waitFence += 10;
       return MIN_NEXT_CORN;
     }
+    case 7: break; // MAX currently
     default: break;
   }
   return 0;

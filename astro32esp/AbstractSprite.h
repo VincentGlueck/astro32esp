@@ -55,6 +55,7 @@ public:
 protected:
   uint8_t animCnt;
   bool keepInMemory;
+  bool loaded = false;
   uint8_t loadedAnims;
   uint8_t animations = 0;
   uint16_t tick;

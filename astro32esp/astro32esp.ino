@@ -29,8 +29,8 @@ uint8_t modeDone = 0xff;
 
 InputController* inputController;
 
-Daisy* daisy;
 Title* title;
+Daisy* daisy = NULL;
 Scroller* scroller;
 GetReady* getReady;
 
@@ -86,6 +86,8 @@ void hello() {
 void calibrateTouch() {
   if (modeDone != mode) {
     restoreBg();
+    daisy = new Daisy();
+    daisy->setPos(Point(-120, 40));
     modeDone = mode;
     miscMode = 0;
     nextMode = millis() + 5000;
@@ -110,6 +112,8 @@ void calibrateTouch() {
 void menu() {
   if (modeDone != mode) {
     restoreBg();
+    title = new Title();
+    title->setPos(Point(320, 35));
     getReady = new GetReady();
     modeDone = mode;
     lastMillis = millis() + 3000;
@@ -125,6 +129,7 @@ void menu() {
   inputController->poll();
   if (inputController->getInput() != Nothing) {
     delete getReady;
+    delete title;
     mode = 3;
   }
 }
@@ -146,14 +151,6 @@ void gameOver() {
   }
 }
 
-void initSprites() {
-  daisy = new Daisy();
-  title = new Title();
-  daisy->setPos(Point(-120, 20));
-  title->setPos(Point(320, 35));
-  restoreBg();
-}
-
 void setup() {
   Serial.begin(115200);
   while (!Serial) delay(10);
@@ -169,13 +166,7 @@ void setup() {
   screenTexts = new SimpleScreenTexts(lcd);
   inputController = new InputController(lcd);
   scroller = new Scroller(background);
-  initSprites();
   lastMillis = millis();
-}
-
-void doTicks() {
-  daisy->onTick();
-  title->onTick();
 }
 
 void testSprite() {
@@ -207,17 +198,16 @@ void mainGame() {
     scroller->onTick();
     drawPlayfield();
     inputController->poll();
-    doTicks();
   }
 }
 
 void loop() {
   bool first = true;
   if (millis() > nextMode) {
-    if (mode < 2) mode++; else nextMode = 1 << 30;
-#ifdef USE_SERIAL_OUT    
-    Serial.printf("mode now: %d\n", mode);
-#endif    
+    if (mode < 2) {
+      mode++;
+      if(mode == 2) delete daisy;         
+    } else nextMode = 1 << 30;
   }
   long t=millis();
   switch (mode) {

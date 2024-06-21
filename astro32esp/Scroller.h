@@ -3,7 +3,7 @@
 
 #include "sprites.hpp"
 
-#define MAX_GROUND_SPRITES 12
+#define MAX_GROUND_SPRITES 20
 #define MIN_NEXT_TICKS 8
 #define MIN_NEXT_MILL 170
 #define MIN_NEXT_FENCE 80
