@@ -47,10 +47,12 @@ public:
   bool isLoaded();
   void setKeepInMemory(bool _keep);
   uint8_t getAnimCnt();
+  void setAnimCnt(uint8_t _cnt);
   Status getStatus();
   void setStatus(Status _status);
   uint8_t getZPrio();
   void setZPrio(uint8_t _prio);
+  void setUsrFlag0(bool _flag);
   String getName();
  
 

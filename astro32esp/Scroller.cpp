@@ -16,6 +16,10 @@ void Scroller::setSpeed(uint8_t _speed) {
   speed = _speed;
 }
 
+void Scroller::setDaisyPos(Point _daisyPos) {
+  daisyPos = _daisyPos;
+}
+
 uint8_t Scroller::getFreeSlot() {
   int n=0;
   while(n < MAX_GROUND_SPRITES) {

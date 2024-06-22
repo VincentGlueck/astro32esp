@@ -13,6 +13,7 @@ SimpleScreenTexts* screenTexts;
 #define USE_SERIAL_OUT
 
 #define EXTRA_BOTTOM 28
+#define MIN_NEXT_DIRECTION_MS 400;
 
 const long TOUCH_REPEAT = 80;            // how often (ms) is (long)touch possible
 const int SCREEN_LEFT = 5;
@@ -27,11 +28,16 @@ uint8_t mode = 0;
 long nextMode = millis() + 30000;
 uint8_t modeDone = 0xff;
 uint8_t subMode = 0;
+int daisyDx = 0;
+int daisyDy = 0;
+long nextPossibleHorz = 0;
+long nextPossibleVert = 0;
 
 InputController* inputController;
 
 Title* title;
 BigDaisy* bigDaisy = NULL;
+Daisy* daisy;
 Scroller* scroller;
 GetReady* getReady;
 
@@ -86,7 +92,7 @@ void hello() {
   if((subMode == 0) && (millis() > (nextMode-2300))) {
     subMode = 1;
     lcd.clearDisplay(TFT_BLACK);
-    screenTexts->smallText("in association with", TFT_SILVER, -42);
+    screenTexts->smallText("in association with", TFT_SILVER, -35);
   }
   if((subMode == 1) && (millis() > (nextMode-1400))) {
     screenTexts->bigText("The Hase", TFT_WHITE);
@@ -114,9 +120,8 @@ void calibrateTouch() {
   drawPlayfield();
   inputController->poll();
   if (inputController->getInput() != Nothing) {
+    inputController->processed();
     inputController->calibrate();
-    clearBackground();
-    drawPlayfield();
   }
 }
 
@@ -135,7 +140,6 @@ void menu() {
   if(getReady->getStatus() == NORMAL) getReady->drawOnSprite(&background);
   getReady->onTick();
   title->onTick();
-  // if(millis() > lastMillis) screenTexts->spriteBig("Touch to start", background, TFT_WHITE);
   drawPlayfield();
   inputController->poll();
   if (inputController->getInput() != Nothing) {
@@ -157,6 +161,7 @@ void gameOver() {
   if ((globalCnt & 0x7f) == 0x7f) {
     inputController->poll();
     if (inputController->getInput() != Nothing) {
+      inputController->processed();
       mode = 3;
     }
   }
@@ -177,17 +182,16 @@ void setup() {
   screenTexts = new SimpleScreenTexts(lcd);
   inputController = new InputController(lcd);
   scroller = new Scroller(background);
-  scroller->setSpeed(2);
+  scroller->setSpeed(1); // TWO to make things weirder
   lastMillis = millis();
 }
 
 void testSprite() {
-  Hunter* sprite = new Hunter();
-  Dog* sprite1 = new Dog();
+  bool flag = false;
+  Daisy* sprite = new Daisy();
   sprite->setStatus(NORMAL);
-  sprite1->setStatus(NORMAL);
   sprite->setPos(Point(20, 9));
-  sprite1->setPos(Point(90, 19));
+  sprite->setUsrFlag0(flag);
   for(;;) {
     clearBackground();
     background.setColor(TFT_DARKGRAY);
@@ -204,33 +208,82 @@ void testSprite() {
       background.drawFastVLine(50+n, 0, 240);
     }
     sprite->drawOnSprite(&background);
-    sprite1->drawOnSprite(&background);
     drawPlayfield();
     lcd.setTextColor(TFT_WHITE);
     lcd.drawString(String(sprite->getAnimCnt()), 20, 100, 4);
-    lcd.drawString(String(sprite1->getAnimCnt()), 90, 100, 4);
     sprite->onTick();
     sprite->setPos(Point(20, sprite->getPos().y));
-    sprite1->onTick();
-    sprite1->setPos(Point(90, sprite->getPos().y));
-  
+    if(rnd() < 8) {
+      flag = !flag;
+      sprite->setUsrFlag0(flag);
+    }
     delay(333);
     do {
       inputController->poll();
       delay(50);
     } while (inputController->getInput() == Nothing);
+    inputController->processed();
   }
+}
+
+void handleDaisy() {
+  uint8_t input = inputController->getInput();
+  if(input != Nothing) {
+    Serial.println("Oops");
+  }
+  if((input & Right) != 0) {
+    if((millis() >= nextPossibleHorz) || (daisyDx != 0)) {
+      if(daisyDx < 1) daisyDx++;
+      nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
+    }
+  }
+  if((input & Left) == Left) {
+    if((millis() >= nextPossibleHorz) || (daisyDx != 0)) {
+      if(daisyDx > -1) daisyDx--;
+      nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
+    }
+  }
+  if((input & Up) == Up) {
+    if((millis() >= nextPossibleVert) || (daisyDy != 0)) {
+      if(daisyDy > -1) daisyDy--;
+      nextPossibleVert = millis() + MIN_NEXT_DIRECTION_MS;
+    }
+  }
+  if((input & Down) != 0) {
+    if((millis() >= nextPossibleVert) || (daisyDy != 0)) {
+      if(daisyDy < 1) daisyDy++;
+      nextPossibleVert = millis() + MIN_NEXT_DIRECTION_MS;
+    }
+  }
+  int x = daisy->getPos().x;
+  int y = daisy->getPos().y;
+  x += daisyDx;
+  y += daisyDy;
+  if((globalCnt & 0) == 0) {
+    if(x < 10) x = 10; else if (x > 170) x = 170;
+    if(y < 5) y = 5; else if (y > 120) y = 120;
+    daisy->setPos(Point(x, y));
+  }
+  if((input & Fire) == Fire) Serial.println("Fire...");
 }
 
 void mainGame() {
   if (modeDone != mode) {
     restoreBg();
+    daisy = new Daisy();
+    daisyDx = 0;
+    daisyDy = 0;
+    inputController->processed();
     modeDone = mode;
   } else {
     clearBackground();
     scroller->onTick();
+    daisy->drawOnSprite(&background);
+    daisy->onTick();
     drawPlayfield();
+    inputController->processed();
     inputController->poll();
+    handleDaisy();
   }
 }
 

@@ -21,6 +21,7 @@ public:
   void onTick();
   void setDifficulty(uint8_t _difficulty);
   void setSpeed(uint8_t _speed);
+  void setDaisyPos(Point _daisyPos);
 
 private:
   LGFX_Sprite background; 
@@ -34,6 +35,7 @@ private:
   void createHunter(uint8_t idx);
   uint8_t getFreeSlot();
   
+  Point daisyPos;
   uint8_t difficulty = 0;
   uint8_t waitTicks = MIN_NEXT_TICKS;
   uint8_t waitMill = MIN_NEXT_MILL;

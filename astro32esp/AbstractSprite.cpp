@@ -38,6 +38,14 @@ void AbstractSprite::addSprite(SingleSprite _sprite) {
   }
 }
 
+void AbstractSprite::setAnimCnt(uint8_t _cnt) {
+  if(_cnt < animations) animCnt = _cnt; else Serial.printf("%s does not have %d frames (%d)", name, _cnt, animations);
+}
+
+void AbstractSprite::setUsrFlag0(bool _flag) {
+  usr_flag0 = _flag;
+}
+
 void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
   bool outOfMemory = false;
   if(loadedAnims < animations) {

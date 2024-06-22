@@ -4,15 +4,15 @@
 #include "TheTouch.h"
 #include "SimpleScreenTexts.h"
 
-#define FASTEST_REPEAT_MS 20
-#define KEEP_TOUCH_FOR_MS 40
+#define FASTEST_REPEAT_MS 120
+#define KEEP_TOUCH_FOR_MS 80
 
 enum UserInput { Nothing = 0,
                  Up = 1,
-                 Left = 2,
-                 Right = 3,
-                 Down = 4,
-                 Fire = 5
+                 Left = 4,
+                 Right = 8,
+                 Down = 2,
+                 Fire = 16
 };
 
 class InputController {
@@ -20,16 +20,19 @@ public:
   class ControllerCallback : public TheTouch::TouchCallback {
     public:
       virtual void clicked(lgfx::touch_point_t* tp);
-      virtual UserInput getInput();
+      virtual uint8_t getInput();
       virtual void processed();
+      virtual void setCalibrated(bool _cal);
   };
 
 public:
   InputController(LGFX _lcd);
   ~InputController();
-  UserInput getInput();
+  uint8_t getInput();
   void debugAsAscii();
   void calibrate();
+  void setCalibrated(bool _cal);
+  void processed();
   void poll();
 
 private:
@@ -38,7 +41,6 @@ private:
   lgfx::touch_point_t* tp;
   SimpleScreenTexts* screenTexts;
   LGFX lcd;
-  bool isCalibrated;
 
 };
 

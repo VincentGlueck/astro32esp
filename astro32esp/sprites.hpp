@@ -63,7 +63,7 @@ public:
     addSprite(SingleSprite(Dimension(148, 18), (short unsigned int*)get_ready));
     keepInMemory = true;
     pos.x = 80;
-    pos.y = 108;
+    pos.y = 98;
     usr_dx = 1;
   }
 
@@ -158,7 +158,7 @@ public:
 
   void onTick() {
     pos.x--;
-    if(pos.x < -40) {
+    if(pos.x < -67) {
       status = VANISHED;
       pos.x = 0xffff;
     }
@@ -196,6 +196,39 @@ public:
       // TODO dog's logic
     }
     
+  }
+};
+
+class Daisy : public AbstractSprite {
+public:
+  Daisy() : AbstractSprite("Daisy", 6) {
+    addSprite(SingleSprite(Dimension(24, 24), (short unsigned int*)daisy01, Point(0, 0)));
+    addSprite(SingleSprite(Dimension(24, 24), (short unsigned int*)daisy02, Point(0, 0)));
+    addSprite(SingleSprite(Dimension(24, 24), (short unsigned int*)daisy03, Point(0, 0)));
+    addSprite(SingleSprite(Dimension(24, 25), (short unsigned int*)daisy04, Point(0, 0)));
+    addSprite(SingleSprite(Dimension(24, 24), (short unsigned int*)daisy05, Point(0, 0)));
+    addSprite(SingleSprite(Dimension(24, 24), (short unsigned int*)daisy06, Point(0, 0)));
+    pos.y = 55;
+    pos.x = 25;
+    animCnt = 0;
+    usr_flag0 = false;
+    usr_flag1 = false;
+  }
+
+  void onTick() {
+    if(usr_flag0 != usr_flag1) {
+      if(animCnt > 2) animCnt -= 3; else animCnt += 3;
+      usr_flag1 = usr_flag0;
+    }
+    tick++;
+    if((tick & 3) == 3) {
+      animCnt++;
+      if(usr_flag0) {
+        if(animCnt >= animations) animCnt = 3;
+      } else {
+        if(animCnt > 2) animCnt = 0;
+      }
+    }
   }
 };
 

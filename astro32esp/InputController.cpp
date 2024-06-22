@@ -4,26 +4,45 @@ class LocalControllerCallback : public InputController::ControllerCallback {
 
 private:
   long nextTouch;
-  long touchTime;
-  UserInput userInput;
+  int userInput;
+  bool calibrated;
 
 public:
   void clicked(lgfx::touch_point_t *tp) {
-    if(millis() < nextTouch) {
-      Serial.println("touch not accepted");
-      return;
-    }
     nextTouch = millis() + FASTEST_REPEAT_MS;
-    Serial.printf("tp.x = %d, tp.y = %d, size = %d\n", tp->x, tp->y, tp->size);
-    userInput = Fire;
+    int x;
+    int y;
+    if(calibrated) {
+      x = tp->x;
+      y = tp->y;
+    } else {
+      x = 330-tp->x;
+      y = 250-tp->y;
+    }
+    userInput = Nothing;
+    if(x > 140) {
+      userInput = Right;
+    } else if (x < 80) {
+      userInput = Left;
+    }
+    if(y > 160) {
+      userInput |= Down;
+    } else if (y < 80) {
+      userInput |= Up;
+    }
+    if(y > 90 && y < 150 && x > 100 && x < 130) userInput = Fire;
   }
 
-  UserInput getInput() {
+  uint8_t getInput() {
     return userInput;
   }
 
   void processed() {
-    userInput = Nothing;
+    userInput = 0;
+  }
+
+  void setCalibrated(bool _cal) {
+    calibrated = _cal;
   }
 };
 
@@ -33,8 +52,6 @@ InputController::InputController(LGFX _lcd) {
   screenTexts = new SimpleScreenTexts(lcd);
   callback = new LocalControllerCallback();
   touch = new TheTouch(lcd, callback);
-  isCalibrated = false;
-  Serial.println("InputController initialized");
 }
 
 InputController::~InputController() {
@@ -44,10 +61,12 @@ InputController::~InputController() {
   free(tp);
 }
 
-UserInput InputController::getInput() {
-  UserInput i = callback->getInput();
+uint8_t InputController::getInput() {
+  return callback->getInput();
+}
+
+void InputController::processed() {
   callback->processed();
-  return i;
 }
 
 void InputController::calibrate() {
@@ -56,23 +75,10 @@ void InputController::calibrate() {
   lcd.clearDisplay(TFT_BLACK);
   screenTexts->bigText("Calibration", TFT_WHITE);
   screenTexts->smallText("done", TFT_WHITE);
-  isCalibrated = true;
+  callback->setCalibrated(true);
   delay(1000);
 }
 
 void InputController::poll() {
   touch->poll();
 }
-
-void InputController::debugAsAscii() {
-   switch (callback->getInput()) {
-    case 0: break;
-    case Up: Serial.println("Up"); break;
-    case Left: Serial.println("Left"); break;
-    case Right: Serial.println("Right"); break;
-    case Down: Serial.println("Down"); break;
-    case Fire: Serial.println("Fire"); break;
-    default: break;
-  }
-}
-
