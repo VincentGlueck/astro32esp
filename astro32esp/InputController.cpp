@@ -21,6 +21,10 @@ public:
   UserInput getInput() {
     return userInput;
   }
+
+  void processed() {
+    userInput = Nothing;
+  }
 };
 
 InputController::InputController(LGFX _lcd) {
@@ -41,7 +45,9 @@ InputController::~InputController() {
 }
 
 UserInput InputController::getInput() {
-  return callback->getInput();
+  UserInput i = callback->getInput();
+  callback->processed();
+  return i;
 }
 
 void InputController::calibrate() {

@@ -10,6 +10,7 @@
 #define MIN_NEXT_CORN 32
 #define MIN_NEXT_MOUNTAIN 30
 #define MIN_NEXT_DOG 38
+#define MIN_NEXT_HUNTER 19
 //#define MIN_NEXT_DECORATION 45
 
 class Scroller {
@@ -19,12 +20,20 @@ public:
   ~Scroller();
   void onTick();
   void setDifficulty(uint8_t _difficulty);
+  void setSpeed(uint8_t _speed);
 
 private:
   LGFX_Sprite background; 
   AbstractSprite* sprites[MAX_GROUND_SPRITES];
   void addGroundObject();
+  void createMill(uint8_t idx);
+  void createFence(uint8_t idx);
+  void createCorn(uint8_t idx);
+  void createMountain(uint8_t idx);
+  void createDog(uint8_t idx);
+  void createHunter(uint8_t idx);
   uint8_t getFreeSlot();
+  
   uint8_t difficulty = 0;
   uint8_t waitTicks = MIN_NEXT_TICKS;
   uint8_t waitMill = MIN_NEXT_MILL;
@@ -32,11 +41,9 @@ private:
   uint8_t waitCorn = MIN_NEXT_CORN;
   uint8_t waitMountain = MIN_NEXT_MOUNTAIN;
   uint8_t waitDog = MIN_NEXT_DOG;
-  void createMill(uint8_t idx);
-  void createFence(uint8_t idx);
-  void createCorn(uint8_t idx);
-  void createMountain(uint8_t idx);
-  void createDog(uint8_t idx);
+  uint8_t waitHunter = MIN_NEXT_HUNTER;
+  uint8_t speed = 1;
+  
 
 };
 

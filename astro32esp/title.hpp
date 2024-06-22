@@ -17,7 +17,7 @@ public:
     addSprite(SingleSprite(Dimension(33, 29), (short unsigned int*)title_R));
     addSprite(SingleSprite(Dimension(33, 26), (short unsigned int*)title_O));
     addSprite(SingleSprite(Dimension(25, 21), (short unsigned int*)logo_Mc));
-    addSprite(SingleSprite(Dimension(14, 16), (short unsigned int*)logo_c));
+    addSprite(SingleSprite(Dimension(14, 16), (short unsigned int*)logo_c, Point(0, 12)));
     addSprite(SingleSprite(Dimension(28, 26), (short unsigned int*)title_C));
     addSprite(SingleSprite(Dimension(34, 31), (short unsigned int*)title_H));
     addSprite(SingleSprite(Dimension(18, 26), (short unsigned int*)title_I));

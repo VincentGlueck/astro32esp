@@ -36,8 +36,9 @@ public:
   AbstractSprite(String _name, uint8_t _animations = 1, uint8_t _zPro = 0);
   AbstractSprite();
   ~AbstractSprite();
-  
-  static AbstractSprite NO_SPRITE;
+
+  virtual void onTick() {};
+
   Point getPos();
   void setPos(Point _pos);
   Dimension getDimension(uint8_t whichAnim);
@@ -51,8 +52,8 @@ public:
   uint8_t getZPrio();
   void setZPrio(uint8_t _prio);
   String getName();
-  
-  virtual void onTick() {};
+ 
+
 
 
 protected:

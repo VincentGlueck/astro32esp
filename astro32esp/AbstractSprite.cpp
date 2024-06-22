@@ -48,7 +48,7 @@ void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
   if(!keepInMemory || !loaded) {
     if(lgfxSprite.createSprite(sprites[animCnt].dimension.width, sprites[animCnt].dimension.height)) {
       lgfxSprite.setSwapBytes(true);
-      lgfxSprite.pushImage(sprites[animCnt].delta.x, sprites[animCnt].delta.y, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
+      lgfxSprite.pushImage(0, 0, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
       loaded = true;
     } else {
       Serial.println("AbstractSprite::Out of memory");
@@ -56,7 +56,7 @@ void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
     }
   }
   if(!outOfMemory) {
-    lgfxSprite.pushSprite(background, pos.x, pos.y, 0x0000);
+    lgfxSprite.pushSprite(background, pos.x + sprites[animCnt].delta.x, pos.y + sprites[animCnt].delta.y, 0x0000);
     if(!keepInMemory) lgfxSprite.deleteSprite();
   }
 }

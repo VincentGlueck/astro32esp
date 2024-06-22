@@ -26,6 +26,7 @@ long lastMillis;
 uint8_t mode = 0;
 long nextMode = millis() + 30000;
 uint8_t modeDone = 0xff;
+uint8_t subMode = 0;
 
 InputController* inputController;
 
@@ -76,10 +77,20 @@ bool initBackground() {
 
 void hello() {
   if (modeDone != mode) {
-    screenTexts->bigText("VincentGlueck", TFT_WHITE);
-    screenTexts->smallText("proudly presents");
+    screenTexts->bigText("The VincentGlueck", TFT_WHITE);
+    screenTexts->smallText("presents");
     modeDone = mode;
-    nextMode = millis() + 2000;
+    nextMode = millis() + 3000;
+    subMode = 0;
+  }
+  if((subMode == 0) && (millis() > (nextMode-2300))) {
+    subMode = 1;
+    lcd.clearDisplay(TFT_BLACK);
+    screenTexts->smallText("in association with", TFT_SILVER, -42);
+  }
+  if((subMode == 1) && (millis() > (nextMode-1400))) {
+    screenTexts->bigText("The Hase", TFT_WHITE);
+    subMode = 2;
   }
 }
 
@@ -166,26 +177,48 @@ void setup() {
   screenTexts = new SimpleScreenTexts(lcd);
   inputController = new InputController(lcd);
   scroller = new Scroller(background);
+  scroller->setSpeed(2);
   lastMillis = millis();
 }
 
 void testSprite() {
-  //mill->setStatus(NORMAL);
-  for(int n=0; n<50; n++) {
-    //mill->onTick();
-    //mill->setPos(Point(20, 10));
+  Hunter* sprite = new Hunter();
+  Dog* sprite1 = new Dog();
+  sprite->setStatus(NORMAL);
+  sprite1->setStatus(NORMAL);
+  sprite->setPos(Point(20, 9));
+  sprite1->setPos(Point(90, 19));
+  for(;;) {
     clearBackground();
-    scroller->onTick();
-    //mill->drawOnSprite(&background);
+    background.setColor(TFT_DARKGRAY);
+    background.drawFastHLine(0, 10, 320);
+    background.drawFastHLine(0, 20, 320);
+    background.drawFastHLine(0, 30, 320);
+    background.drawFastHLine(0, 40, 320);
+    // background.drawFastHLine(0, 50, 320);
+    for(int n=0; n<80; n+=79) {
+      background.drawFastVLine(10+n, 0, 240);
+      background.drawFastVLine(20+n, 0, 240);
+      background.drawFastVLine(30+n, 0, 240);
+      background.drawFastVLine(40+n, 0, 240);
+      background.drawFastVLine(50+n, 0, 240);
+    }
+    sprite->drawOnSprite(&background);
+    sprite1->drawOnSprite(&background);
     drawPlayfield();
     lcd.setTextColor(TFT_WHITE);
-    lcd.drawFastHLine(0, 40, 320);
-    lcd.drawFastHLine(0, 50, 320);
-    lcd.drawFastHLine(0, 60, 320);
-    lcd.drawFastHLine(0, 70, 320);
-    lcd.drawFastHLine(0, 80, 320);
-    //lcd.drawString(String(mill->getAnimCnt()), 200, 100, 4);
-    delay(1000);
+    lcd.drawString(String(sprite->getAnimCnt()), 20, 100, 4);
+    lcd.drawString(String(sprite1->getAnimCnt()), 90, 100, 4);
+    sprite->onTick();
+    sprite->setPos(Point(20, sprite->getPos().y));
+    sprite1->onTick();
+    sprite1->setPos(Point(90, sprite->getPos().y));
+  
+    delay(333);
+    do {
+      inputController->poll();
+      delay(50);
+    } while (inputController->getInput() == Nothing);
   }
 }
 
@@ -202,6 +235,7 @@ void mainGame() {
 }
 
 void loop() {
+  //testSprite();
   bool first = true;
   if (millis() > nextMode) {
     if (mode < 2) {

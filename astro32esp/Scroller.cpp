@@ -12,6 +12,10 @@ void Scroller::setDifficulty(uint8_t _difficulty) {
   difficulty = _difficulty;
 }
 
+void Scroller::setSpeed(uint8_t _speed) {
+  speed = _speed;
+}
+
 uint8_t Scroller::getFreeSlot() {
   int n=0;
   while(n < MAX_GROUND_SPRITES) {
@@ -36,6 +40,7 @@ void Scroller::createMill(uint8_t idx) {
   sprites[idx] = new Mill();
   if(waitFence < 30) waitFence += 30;
   if(waitDog < 15) waitDog += 15;
+  if(waitHunter < 15) waitHunter += 15;
   waitMill = MIN_NEXT_MILL;
 }
 
@@ -73,6 +78,14 @@ void Scroller::createDog(uint8_t idx) {
   waitDog = MIN_NEXT_DOG + rnd(0xf);
 }
 
+void Scroller::createHunter(uint8_t idx) {
+  if(waitHunter > 0) return;
+  sprites[idx] = new Hunter();
+  waitHunter = MIN_NEXT_HUNTER + rnd(0xf);
+  if(waitMill < 15) waitMill += 15;
+  if(waitFence < 10) waitFence += 10;
+}
+
 void Scroller::addGroundObject() {
   int idx = getFreeSlot();
   if(idx == -1) {
@@ -83,8 +96,8 @@ void Scroller::addGroundObject() {
   int what = rnd(7);
   switch(what) {
     case 0: createMill(idx); break;
-    case 1: break;
-    case 3: createMill(idx); break;
+    case 1: createHunter(idx); break;
+    case 3: break;
     case 4: createFence(idx); break;
     case 5: createMountain(idx); waitTicks = 5; break;
     case 6: createCorn(idx); break;
@@ -103,6 +116,7 @@ void Scroller::onTick() {
           delete sprites[n];
           sprites[n] = NULL;
         } else if(z == sprites[n]->getZPrio()) {
+          if(speed > 1) sprites[n]->setPos(Point(sprites[n]->getPos().x - (speed-1), sprites[n]->getPos().y));
           sprites[n]->drawOnSprite(&background);
           sprites[n]->onTick();
         }
@@ -117,9 +131,10 @@ void Scroller::onTick() {
     if(waitCorn > 0) waitCorn--;
     if(waitDog > 0) waitDog--;
     if(waitMountain > 0) waitMountain--;
+    if(waitHunter > 0) waitHunter--;
     int f = 0;
     for(int n=0; n<MAX_GROUND_SPRITES; n++) if(sprites[n] == NULL) f++;
-    //Serial.printf("wait: fence:%d, mill:%d, corn:%d, mountain:%d, dog:%d, free slots:%d\n", waitFence, waitFence, waitCorn, waitMountain, waitDog, f);
+    //Serial.printf("wait: fence:%d, mill:%d, corn:%d, mountain:%d, dog:%d, hunter:%d, free slots:%d\n", waitFence, waitFence, waitCorn, waitMountain, waitDog, waitHunter, f);
   }
 
 }
