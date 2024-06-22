@@ -44,7 +44,7 @@ void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
     Serial.printf("FATAL, sprite '%s' has only loaded %d of %d!", name, loadedAnims, animations);
     sleep(10000);
   }
-  if(status == READY) return; // sprite is waiting
+  if((status == VANISHED) || (pos.x == 0xffff)) return; // sprite is gone or out of visible range
   if(!keepInMemory || !loaded) {
     if(lgfxSprite.createSprite(sprites[animCnt].dimension.width, sprites[animCnt].dimension.height)) {
       lgfxSprite.setSwapBytes(true);
@@ -90,6 +90,10 @@ uint8_t AbstractSprite::getZPrio() {
 
 void AbstractSprite::setZPrio(uint8_t _prio) {
   zPrio = _prio;
+}
+
+String AbstractSprite::getName() {
+  return name;
 }
 
 

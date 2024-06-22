@@ -50,6 +50,7 @@ public:
   void setStatus(Status _status);
   uint8_t getZPrio();
   void setZPrio(uint8_t _prio);
+  String getName();
   
   virtual void onTick() {};
 

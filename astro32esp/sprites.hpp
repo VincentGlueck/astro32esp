@@ -70,13 +70,13 @@ public:
       }
     }
     pos.y = 107 + rnd(3);
-    status = ((tick >> 2) & 3) < 1 ? READY : NORMAL;
+    status = ((tick >> 2) & 3) < 1 ? VANISHED : NORMAL;
   }
 };
 
 class Mill : public AbstractSprite {
 public:  
-  Mill() : AbstractSprite("Mill", 4) {
+  Mill() : AbstractSprite("Mill", 4, 2) {
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill01));
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill02));
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill03, Point(0,3)));
@@ -94,7 +94,7 @@ public:
     if(status == NORMAL) {
       pos.x--;
       if(pos.x < -19) {
-        status = READY;
+        status = VANISHED;
         pos.x = 0xffff;
       }
     }
@@ -114,17 +114,17 @@ public:
     if(status == NORMAL) {
       animCnt = COLLIDED ? 1 : 0;
       pos.x--;
-      if(pos.x < -52) {
-        status = READY;
-        pos.x = 0xffff;
-      }
+    }
+    if(pos.x < -52) {
+      status = VANISHED;
+      pos.x = 0xffff;
     }
   }
 };
 
 class Corn : public AbstractSprite {
 public:
-  Corn() : AbstractSprite("Corn", 2, 1) {
+  Corn() : AbstractSprite("Corn", 2, 2) {
     addSprite(SingleSprite(Dimension(13, 28), (short unsigned int*)corn01));
     addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02));
     pos.y = 125;
@@ -133,7 +133,7 @@ public:
   void onTick() {
     pos.x--;
     if(pos.x < -9) {
-      status = READY;
+      status = VANISHED;
       pos.x = 0xffff;
     }
   }
@@ -150,7 +150,7 @@ public:
   void onTick() {
     pos.x--;
     if(pos.x < -40) {
-      status = READY;
+      status = VANISHED;
       pos.x = 0xffff;
     }
   }
@@ -175,36 +175,35 @@ public:
   void onTick() {
     pos.x--;
     if(pos.x < -40) {
-      status = READY;
+      status = VANISHED;
       pos.x = 0xffff;
     }
   }
 };
 
-/*
-class Decoration : public AbstractSprite {
+class Hunter : public DaisyAwareSprite {
 public:
-  Decoration() : AbstractSprite("deco", 2) {
-    addSprite(SingleSprite(Dimension(26, 10), (short unsigned int*)stone));
-    addSprite(SingleSprite(Dimension(12, 16), (short unsigned int*)gras));
-    //addSprite(SingleSprite(Dimension(45, 14), (short unsigned int*)mountain));
+  Hunter() : DaisyAwareSprite("Hunter", 9) {
+    addSprite(SingleSprite(Dimension(28, 31), (short unsigned int*)man01));
+    addSprite(SingleSprite(Dimension(21, 35), (short unsigned int*)man02));
+    addSprite(SingleSprite(Dimension(18, 37), (short unsigned int*)man03));
+    addSprite(SingleSprite(Dimension(19, 37), (short unsigned int*)man04));
+    addSprite(SingleSprite(Dimension(21, 35), (short unsigned int*)man05));
+    addSprite(SingleSprite(Dimension(29, 31), (short unsigned int*)man06));
+    addSprite(SingleSprite(Dimension(25, 32), (short unsigned int*)man07));
+    addSprite(SingleSprite(Dimension(31, 37), (short unsigned int*)man08));
+    addSprite(SingleSprite(Dimension(44, 11), (short unsigned int*)man09));
+    pos.y = 131;
     pos.x = 305;
-    int which = rnd(1);
-    //if(which == 2) which = 1;
-    animCnt = which;
-    if(which == 0) pos.y = 145; else pos.y = 142;
-  }
+  }  
 
   void onTick() {
-    tick++;
     pos.x--;
-    if((tick & 1) == 1) pos.x--;
-    if(pos.x < -9) {
-      status = READY;
+    if(pos.x < -40) {
+      status = VANISHED;
       pos.x = 0xffff;
     }
   }
 };
-*/
 
 #endif

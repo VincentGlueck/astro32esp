@@ -21,6 +21,12 @@ uint8_t Scroller::getFreeSlot() {
     n++;
   }
   Serial.println("Out of slots!");
+  for(int n=0; n<MAX_GROUND_SPRITES; n++) {
+    Serial.printf("n:%d :", n);
+    if(sprites[n] != NULL) {
+      Serial.printf("is a %s, pos.x: %d, status: %d\n", sprites[n]->getName(), sprites[n]->getPos().x, sprites[n]->getStatus());
+    } else Serial.printf("NULL\n");
+  }
   return -1;
 }
 
@@ -87,8 +93,22 @@ void Scroller::addGroundObject() {
   }
 }
 
+
 void Scroller::onTick() {
   if(waitTicks > 0) waitTicks--;
+  for(int z=0; z<3; z++) {
+    for(int n=0; n<MAX_GROUND_SPRITES; n++) {
+      if(sprites[n] != NULL) {
+        if((z == 2) && (sprites[n]->getStatus() == VANISHED)) {
+          delete sprites[n];
+          sprites[n] = NULL;
+        } else if(z == sprites[n]->getZPrio()) {
+          sprites[n]->drawOnSprite(&background);
+          sprites[n]->onTick();
+        }
+      }
+    }
+  }
   if((waitTicks <= 0) && ((rnd(1) == 1) || (difficulty > 2))) {
     addGroundObject();
     if(waitMill > 0) waitMill--;
@@ -97,21 +117,10 @@ void Scroller::onTick() {
     if(waitCorn > 0) waitCorn--;
     if(waitDog > 0) waitDog--;
     if(waitMountain > 0) waitMountain--;
-    Serial.printf("wait: fence:%d, mill:%d, corn:%d, mountain:%d, dog:%d\n", waitFence, waitFence, waitCorn, waitMountain, waitDog);
-    
+    int f = 0;
+    for(int n=0; n<MAX_GROUND_SPRITES; n++) if(sprites[n] == NULL) f++;
+    //Serial.printf("wait: fence:%d, mill:%d, corn:%d, mountain:%d, dog:%d, free slots:%d\n", waitFence, waitFence, waitCorn, waitMountain, waitDog, f);
   }
-  for(int n=0; n<MAX_GROUND_SPRITES; n++) {
-    if((sprites[n] != NULL) && (sprites[n]->getStatus() == READY)) {
-      delete sprites[n];
-      sprites[n] = NULL;
-    }
-  }
-  for(int z=0; z<1; z++) {
-    for(int n=0; n<MAX_GROUND_SPRITES; n++) {
-      if((sprites[n] == NULL) || (sprites[n]->getZPrio() != z)) continue;
-      sprites[n]->drawOnSprite(&background);
-      sprites[n]->onTick();
-    }
-  }
+
 }
 
