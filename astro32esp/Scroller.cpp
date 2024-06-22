@@ -8,6 +8,10 @@ Scroller::Scroller(LGFX_Sprite _background) {
 Scroller::~Scroller() {
 }
 
+void Scroller::setDifficulty(uint8_t _difficulty) {
+  difficulty = _difficulty;
+}
+
 uint8_t Scroller::getFreeSlot() {
   int n=0;
   while(n < MAX_GROUND_SPRITES) {
@@ -20,81 +24,93 @@ uint8_t Scroller::getFreeSlot() {
   return -1;
 }
 
-uint8_t Scroller::createMill(uint8_t idx) {
-  if(waitMill > 0) return 0;
-  waitMill = MIN_NEXT_MILL;
-  waitFence += 30;
+void Scroller::createMill(uint8_t idx) {
+  if(waitMill > 0) return;
+  waitMill = MIN_NEXT_MILL + rnd(0xf);
   sprites[idx] = new Mill();
-  return 5;
+  if(waitFence < 30) waitFence += 30;
+  if(waitDog < 15) waitDog += 15;
+  waitMill = MIN_NEXT_MILL;
 }
 
-uint8_t Scroller::createFence(uint8_t idx) {
-  if(waitFence > 0) {
-    return 0;
-  }
-  waitFence = MIN_NEXT_FENCE;
-  waitMill += 20;
+void Scroller::createFence(uint8_t idx) {
+  if(waitFence > 0) return;
   sprites[idx] = new Fence();
-  return 10;
+  if(waitMill < 20) waitMill += 20;
+  if(waitDog < 15) waitDog += 15;
+  waitFence = MIN_NEXT_FENCE + rnd(0xf);
 }
 
-uint8_t Scroller::createCorn(uint8_t idx) {
-  sprites[idx] = new Corn();
-  return -1;
+void Scroller::createCorn(uint8_t idx) {
+  if(waitCorn > 0) return;
+  int x = 315;
+  for(int n=0; n<3+rnd(3); n++) {
+    sprites[idx] = new Corn();
+    sprites[idx]->setPos(Point(x, sprites[idx]->getPos().y));
+    x += 21;
+    waitMill += 2;
+    idx = getFreeSlot();
+    if(idx == -1) break;
+  }
+  waitCorn = MIN_NEXT_CORN + rnd(0xf);
 }
 
-uint8_t Scroller::addGroundObject() {
+void Scroller::createMountain(uint8_t idx) {
+  if(waitMountain > 0) return;
+  sprites[idx] = new Mountain();
+  waitMountain = MIN_NEXT_MOUNTAIN + rnd(0xf);
+}
+
+void Scroller::createDog(uint8_t idx) {
+  if(waitDog > 0) return;
+  sprites[idx] = new Dog();
+  waitDog = MIN_NEXT_DOG + rnd(0xf);
+}
+
+void Scroller::addGroundObject() {
   int idx = getFreeSlot();
   if(idx == -1) {
     Serial.println("No free slot!");
-    return 0;
+    return;
   }
+  waitTicks = MIN_NEXT_TICKS;
   int what = rnd(7);
   switch(what) {
-    case 0: return createMill(idx);
-    case 1: return createMill(idx);
-    case 3: return createMill(idx);
-    case 4: return createFence(idx);
-    case 5: return 10;
-    case 6: {
-      if(waitCorn > 0) return 0;
-      int x = 315;
-      for(int n=0; n<3+rnd(3); n++) {
-        createCorn(idx);
-        sprites[idx]->setPos(Point(x, sprites[idx]->getPos().y));
-        x += 20;
-        idx = getFreeSlot();
-        if(idx == -1) break;
-      }
-      waitCorn = MIN_NEXT_CORN;
-      waitMill = 15;
-      if(waitFence < MIN_NEXT_FENCE) waitFence += 10;
-      return 5;
-    }
-    case 7: break; // MAX currently
+    case 0: createMill(idx); break;
+    case 1: break;
+    case 3: createMill(idx); break;
+    case 4: createFence(idx); break;
+    case 5: createMountain(idx); waitTicks = 5; break;
+    case 6: createCorn(idx); break;
+    case 7: createDog(idx); break; // MAX currently
     default: break;
   }
-  return 0;
 }
 
 void Scroller::onTick() {
   if(waitTicks > 0) waitTicks--;
-  if((waitTicks <= 0) && (rnd(1) == 1)) {
+  if((waitTicks <= 0) && ((rnd(1) == 1) || (difficulty > 2))) {
+    addGroundObject();
     if(waitMill > 0) waitMill--;
+    if((waitMill > 0) && (difficulty > 1)) waitMill--;
     if(waitFence > 0) waitFence--;
     if(waitCorn > 0) waitCorn--;
-    Serial.printf("wait: fence:%d, mill:%d, corn:%d\n", waitFence, waitFence, waitCorn);
-    waitTicks = addGroundObject();
+    if(waitDog > 0) waitDog--;
+    if(waitMountain > 0) waitMountain--;
+    Serial.printf("wait: fence:%d, mill:%d, corn:%d, mountain:%d, dog:%d\n", waitFence, waitFence, waitCorn, waitMountain, waitDog);
+    
   }
   for(int n=0; n<MAX_GROUND_SPRITES; n++) {
-    if(sprites[n] != NULL) {
-      if(sprites[n]->getStatus() == READY) {
-        delete sprites[n];
-        sprites[n] = NULL;
-      } else {
-        sprites[n]->drawOnSprite(&background);
-        sprites[n]->onTick();
-      }
+    if((sprites[n] != NULL) && (sprites[n]->getStatus() == READY)) {
+      delete sprites[n];
+      sprites[n] = NULL;
+    }
+  }
+  for(int z=0; z<1; z++) {
+    for(int n=0; n<MAX_GROUND_SPRITES; n++) {
+      if((sprites[n] == NULL) || (sprites[n]->getZPrio() != z)) continue;
+      sprites[n]->drawOnSprite(&background);
+      sprites[n]->onTick();
     }
   }
 }

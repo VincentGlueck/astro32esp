@@ -1,6 +1,6 @@
 #include "AbstractSprite.h"
 
-AbstractSprite::AbstractSprite(String _name, uint8_t _animations = 1) {
+AbstractSprite::AbstractSprite(String _name, uint8_t _animations, uint8_t _zPrio) {
   name = _name;
   animations = _animations;
   tick = 0;
@@ -8,6 +8,7 @@ AbstractSprite::AbstractSprite(String _name, uint8_t _animations = 1) {
   keepInMemory = false;
   loaded = false;
   animCnt = 0;
+  zPrio = _zPrio;
   status = NORMAL;
   sprites = new SingleSprite[animations];
 }
@@ -83,5 +84,12 @@ uint8_t AbstractSprite::getAnimCnt() {
   return animCnt;
 }
 
+uint8_t AbstractSprite::getZPrio() {
+  return zPrio;
+}
+
+void AbstractSprite::setZPrio(uint8_t _prio) {
+  zPrio = _prio;
+}
 
 

@@ -33,7 +33,7 @@ struct SingleSprite {
 class AbstractSprite {
 public:
 
-  AbstractSprite(String _name, uint8_t _animations);
+  AbstractSprite(String _name, uint8_t _animations = 1, uint8_t _zPro = 0);
   AbstractSprite();
   ~AbstractSprite();
   
@@ -48,6 +48,8 @@ public:
   uint8_t getAnimCnt();
   Status getStatus();
   void setStatus(Status _status);
+  uint8_t getZPrio();
+  void setZPrio(uint8_t _prio);
   
   virtual void onTick() {};
 
@@ -58,6 +60,7 @@ protected:
   bool loaded = false;
   uint8_t loadedAnims;
   uint8_t animations = 0;
+  uint8_t zPrio = 0;
   uint16_t tick;
   Point pos;
   String name;

@@ -5,15 +5,24 @@
 #include "sprites_ground.h"
 #include "FastRandom.hpp"
 
-class Daisy : public AbstractSprite {
+class DaisyAwareSprite : public AbstractSprite {
+protected:
+  Point daisyPos;  
 public:
-  Daisy() : AbstractSprite("Daisy", 1 ) {
-    addSprite(SingleSprite(Dimension(121, 108), (short unsigned int*)daisy_raw));
+  DaisyAwareSprite(String _name, uint8_t _animations) : AbstractSprite(_name, _animations) {}
+  void setDaisyPos(Point _p) {
+    daisyPos = Point(_p.x, _p.y);
+  }
+};
+
+class BigDaisy : public AbstractSprite {
+public:
+  BigDaisy() : AbstractSprite("Daisy", 1 ) {
+    addSprite(SingleSprite(Dimension(121, 108), (short unsigned int*)big_daisy));
     keepInMemory = true;
     usr_dx = 8;
     usr_ddx = -3;
     usr_flag0 = true;
-    status = NORMAL;
   }
 
   void onTick() {
@@ -46,7 +55,6 @@ public:
     pos.x = 80;
     pos.y = 108;
     usr_dx = 1;
-    status = NORMAL;
   }
 
   void onTick() {
@@ -75,7 +83,6 @@ public:
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill04));
     pos.x = 305;
     pos.y = 86;
-    status = NORMAL;
   }
 
   void onTick() {
@@ -85,8 +92,6 @@ public:
       if(animCnt > 3) animCnt = 0;
     }
     if(status == NORMAL) {
-      //Serial.printf("anim: %d\n", animCnt);
-      //delay(1000);
       pos.x--;
       if(pos.x < -19) {
         status = READY;
@@ -103,7 +108,6 @@ public:
     addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence01));
     pos.x = 305;
     pos.y = 108;
-    status = NORMAL;
   }
 
   void onTick() {
@@ -120,16 +124,57 @@ public:
 
 class Corn : public AbstractSprite {
 public:
-  Corn() : AbstractSprite("Corn", 2) {
+  Corn() : AbstractSprite("Corn", 2, 1) {
     addSprite(SingleSprite(Dimension(13, 28), (short unsigned int*)corn01));
     addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02));
-    status = NORMAL;
     pos.y = 125;
   }
 
   void onTick() {
     pos.x--;
     if(pos.x < -9) {
+      status = READY;
+      pos.x = 0xffff;
+    }
+  }
+};
+
+class Mountain : public AbstractSprite {
+public:
+  Mountain() : AbstractSprite("Mountain", 1, 1) {
+    addSprite(SingleSprite(Dimension(45, 14), (short unsigned int*)mountain_raw));
+    pos.y = 136;
+    pos.x = 305;
+  }  
+
+  void onTick() {
+    pos.x--;
+    if(pos.x < -40) {
+      status = READY;
+      pos.x = 0xffff;
+    }
+  }
+};
+
+class Dog : public DaisyAwareSprite {
+public:
+  Dog() : DaisyAwareSprite("Dog", 9) {
+    addSprite(SingleSprite(Dimension(27, 21), (short unsigned int*)dog01));
+    addSprite(SingleSprite(Dimension(28, 25), (short unsigned int*)dog02));
+    addSprite(SingleSprite(Dimension(27, 29), (short unsigned int*)dog03));
+    addSprite(SingleSprite(Dimension(28, 28), (short unsigned int*)dog04));
+    addSprite(SingleSprite(Dimension(33, 29), (short unsigned int*)dog05));
+    addSprite(SingleSprite(Dimension(25, 21), (short unsigned int*)dog06));
+    addSprite(SingleSprite(Dimension(32, 29), (short unsigned int*)dog07));
+    addSprite(SingleSprite(Dimension(32, 24), (short unsigned int*)dog08));
+    addSprite(SingleSprite(Dimension(35, 24), (short unsigned int*)dog09));
+    pos.y = 131;
+    pos.x = 305;
+  }
+
+  void onTick() {
+    pos.x--;
+    if(pos.x < -40) {
       status = READY;
       pos.x = 0xffff;
     }

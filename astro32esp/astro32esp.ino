@@ -30,7 +30,7 @@ uint8_t modeDone = 0xff;
 InputController* inputController;
 
 Title* title;
-Daisy* daisy = NULL;
+BigDaisy* bigDaisy = NULL;
 Scroller* scroller;
 GetReady* getReady;
 
@@ -86,15 +86,15 @@ void hello() {
 void calibrateTouch() {
   if (modeDone != mode) {
     restoreBg();
-    daisy = new Daisy();
-    daisy->setPos(Point(-120, 40));
+    bigDaisy = new BigDaisy();
+    bigDaisy->setPos(Point(-120, 40));
     modeDone = mode;
     miscMode = 0;
     nextMode = millis() + 5000;
   }
   clearBackground();
-  daisy->drawOnSprite(&background);
-  daisy->onTick();
+  bigDaisy->drawOnSprite(&background);
+  bigDaisy->onTick();
   screenTexts->spriteBig("Calibrate touch?", background, TFT_WHITE);
   if ((millis() + 3500) > nextMode) {
     screenTexts->spriteSmall("Touch anywhere...", background);
@@ -206,7 +206,7 @@ void loop() {
   if (millis() > nextMode) {
     if (mode < 2) {
       mode++;
-      if(mode == 2) delete daisy;         
+      if(mode == 2) delete bigDaisy;         
     } else nextMode = 1 << 30;
   }
   long t=millis();
