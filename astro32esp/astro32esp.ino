@@ -228,9 +228,6 @@ void testSprite() {
 
 void handleDaisy() {
   uint8_t input = inputController->getInput();
-  if(input != Nothing) {
-    Serial.println("Oops");
-  }
   if((input & Right) != 0) {
     if((millis() >= nextPossibleHorz) || (daisyDx != 0)) {
       if(daisyDx < 1) daisyDx++;
@@ -261,7 +258,7 @@ void handleDaisy() {
   y += daisyDy;
   if((globalCnt & 0) == 0) {
     if(x < 10) x = 10; else if (x > 170) x = 170;
-    if(y < 5) y = 5; else if (y > 120) y = 120;
+    if(y < 5) y = 5; else if (y > 107) y = 107;
     daisy->setPos(Point(x, y));
   }
   if((input & Fire) == Fire) Serial.println("Fire...");
@@ -273,6 +270,7 @@ void mainGame() {
     daisy = new Daisy();
     daisyDx = 0;
     daisyDy = 0;
+    inputController->getInput();
     inputController->processed();
     modeDone = mode;
   } else {
