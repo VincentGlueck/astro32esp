@@ -28,6 +28,10 @@ public:
     tick = 30;
   }
 
+  int getClazz() {
+    return CLASS_DEFAULT;
+  }
+
   void onTick() {
     tick--;
     if(tick < 1) tick = 60;

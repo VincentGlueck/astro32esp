@@ -3,6 +3,8 @@
 Scroller::Scroller(LGFX_Sprite _background) {
   background = _background;
   for(int n=0; n<MAX_GROUND_SPRITES; n++) sprites[n] = NULL;
+  daisyPos = Point(0xffff, 0xffff);
+  eggPos = Point(0xffff, 0xffff);
 }
 
 Scroller::~Scroller() {
@@ -14,10 +16,6 @@ void Scroller::setDifficulty(uint8_t _difficulty) {
 
 void Scroller::setSpeed(uint8_t _speed) {
   speed = _speed;
-}
-
-void Scroller::setDaisyPos(Point _daisyPos) {
-  daisyPos = _daisyPos;
 }
 
 uint8_t Scroller::getFreeSlot() {
@@ -123,6 +121,11 @@ void Scroller::onTick() {
           if(speed > 1) sprites[n]->setPos(Point(sprites[n]->getPos().x - (speed-1), sprites[n]->getPos().y));
           sprites[n]->drawOnSprite(&background);
           sprites[n]->onTick();
+          if(sprites[n]->getClazz() == CLASS_IS_DAISY) {
+            daisyPos = sprites[n]->getPos();
+          } else if (sprites[n]->getClazz() == CLASS_IS_EGG) {
+            eggPos = sprites[n]->getPos();
+          }
         }
       }
     }

@@ -7,17 +7,32 @@
 
 class DaisyAwareSprite : public AbstractSprite {
 protected:
-  Point daisyPos;  
+  Point daisyPos;
+  Point eggPos;
 public:
   DaisyAwareSprite(String _name, uint8_t _animations) : AbstractSprite(_name, _animations) {}
   void setDaisyPos(Point _p) {
     daisyPos = Point(_p.x, _p.y);
   }
+  void setEggPos(Point _p) {
+    eggPos = Point(_p.x, _p.y);
+  }
+  int getClazz() {
+    return CLASS_DAISY_AWARE;
+  }
 };
 
-class BigDaisy : public AbstractSprite {
+class DefaultSprite : public AbstractSprite {
+public:  
+  DefaultSprite(String _name, uint8_t _animations) : AbstractSprite(_name, _animations) {}
+  int getClazz() {
+    return CLASS_DEFAULT;
+  }
+};
+
+class BigDaisy : public DefaultSprite {
 public:
-  BigDaisy() : AbstractSprite("Daisy", 1 ) {
+  BigDaisy() : DefaultSprite("Daisy", 1 ) {
     addSprite(SingleSprite(Dimension(121, 108), (short unsigned int*)big_daisy));
     keepInMemory = true;
     usr_dx = 8;
@@ -57,9 +72,9 @@ public:
 
 };
 
-class GetReady : public AbstractSprite {
+class GetReady : public DefaultSprite {
 public:  
-  GetReady() : AbstractSprite("gr", 1) {
+  GetReady() : DefaultSprite("gr", 1) {
     addSprite(SingleSprite(Dimension(148, 18), (short unsigned int*)get_ready));
     keepInMemory = true;
     pos.x = 80;
@@ -84,9 +99,9 @@ public:
   }
 };
 
-class Mill : public AbstractSprite {
+class Mill : public DefaultSprite {
 public:  
-  Mill() : AbstractSprite("Mill", 3, 2) {
+  Mill() : DefaultSprite("Mill", 3) {
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill01)); // original mill03 removed (avoid flickering); image-cut fault (24 years ago)
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill02));
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill03));
@@ -110,9 +125,9 @@ public:
   }
 };
 
-class Fence : public AbstractSprite {
+class Fence : public DefaultSprite {
 public:
-  Fence() : AbstractSprite("Fence", 2) {
+  Fence() : DefaultSprite("Fence", 2) {
     addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence02));
     addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence01));
     pos.x = 305;
@@ -131,9 +146,9 @@ public:
   }
 };
 
-class Corn : public AbstractSprite {
+class Corn : public DaisyAwareSprite {
 public:
-  Corn() : AbstractSprite("Corn", 2, 2) {
+  Corn() : DaisyAwareSprite("Corn", 2) {
     addSprite(SingleSprite(Dimension(13, 28), (short unsigned int*)corn01));
     addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02));
     pos.y = 125;
@@ -148,9 +163,9 @@ public:
   }
 };
 
-class Mountain : public AbstractSprite {
+class Mountain : public DefaultSprite {
 public:
-  Mountain() : AbstractSprite("Mountain", 1, 1) {
+  Mountain() : DefaultSprite("Mountain", 1) {
     addSprite(SingleSprite(Dimension(71, 22), (short unsigned int*)mountain_raw));
     pos.y = 129;
     pos.x = 305;
@@ -215,6 +230,10 @@ public:
     usr_flag1 = false;
   }
 
+  int getClazz() {
+    return CLASS_IS_DAISY;
+  }
+
   void onTick() {
     if(usr_flag0 != usr_flag1) {
       if(animCnt > 2) animCnt -= 3; else animCnt += 3;
@@ -248,7 +267,7 @@ public:
     pos.x = 310;
     animCnt = 0;
     usr_ddx = 1;
-  }  
+  }
 
   void onTick() {
     tick++;
@@ -265,6 +284,87 @@ public:
         animCnt += usr_ddx;
       }
     }
+  }
+};
+
+class Gras : public DefaultSprite {
+public:
+  Gras() : DefaultSprite("Gras", 1) {
+    addSprite(SingleSprite(Dimension(7, 11), (short unsigned int*)gras));
+    pos.x = 310;
+    pos.y = 123;
+  }
+
+  void onTick() {
+    pos.x--;
+    if(pos.x < -3) {
+      status = VANISHED;
+      pos.x = 0xffff;
+    }
+  }
+};
+
+class Egg : public AbstractSprite {
+public:
+  Egg() : AbstractSprite("Egg", 11) {
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg01));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg02));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg03, Point(1,0)));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg04, Point(1,0)));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg05));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg06));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg07, Point(1,0)));
+
+    addSprite(SingleSprite(Dimension(13, 8), (short unsigned int*)eggdamaged01));
+    addSprite(SingleSprite(Dimension(14, 8), (short unsigned int*)eggdamaged02, Point(-1,0)));
+    addSprite(SingleSprite(Dimension(14, 7), (short unsigned int*)eggdamaged03, Point(-1,1)));
+    addSprite(SingleSprite(Dimension(14, 5), (short unsigned int*)eggdamaged04, Point(-1,2)));
+  }
+
+  int getClazz() {
+    return CLASS_IS_EGG;
+  }
+
+  void onTick() {
+    tick++;
+    if((tick & 0) == 0) {
+      animCnt++;
+      if(animCnt >= animations) animCnt = 0;
+    }
+  }
+};
+
+class Wolf : public DaisyAwareSprite {
+public:
+  Wolf() : DaisyAwareSprite("Wolf", 5) {
+    addSprite(SingleSprite(Dimension(59, 11), (short unsigned int*)wulf01));
+    addSprite(SingleSprite(Dimension(61, 11), (short unsigned int*)wulf02, Point(2,0)));
+    addSprite(SingleSprite(Dimension(32, 32), (short unsigned int*)crashwolf01, Point(7,-10)));
+    addSprite(SingleSprite(Dimension(32, 32), (short unsigned int*)crashwolf02, Point(7,-10)));
+    addSprite(SingleSprite(Dimension(32, 32), (short unsigned int*)crashwolf03, Point(7,-10)));
+    animCnt = 0;
+    usr_flag0 = false;
+    usr_flag1 = false;
+    pos.x = 310;
+    pos.y = 30 + rnd() >> 2;
+  }
+
+  void onTick() {
+    tick++;
+    if((tick & 0) == 0) {
+      animCnt++;
+      if(status == COLLIDED) {
+        if(animCnt >= animations) animCnt = 0;  
+      } else {
+        if(animCnt > 1) animCnt = 1;
+      }
+    }
+    pos.x-=2;
+    if(pos.x < -58) {
+      status = VANISHED;
+      pos.x = 0xffff;
+    }
+
   }
 };
 

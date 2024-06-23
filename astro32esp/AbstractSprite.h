@@ -7,6 +7,13 @@
 #define PLAYFIELD_WIDTH 310
 #define PLAYFIELD_HEIGHT 176
 
+enum ClazzType {
+  CLASS_DEFAULT,
+  CLASS_DAISY_AWARE,
+  CLASS_IS_DAISY,
+  CLASS_IS_EGG
+};
+
 enum Status {
   NORMAL,
   READY,
@@ -38,6 +45,7 @@ public:
   ~AbstractSprite();
 
   virtual void onTick() {};
+  virtual int getClazz() { return CLASS_DEFAULT; };
 
   Point getPos();
   void setPos(Point _pos);

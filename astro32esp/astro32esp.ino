@@ -188,9 +188,9 @@ void setup() {
 
 void testSprite() {
   bool flag = false;
-  Daisy* sprite = new Daisy();
+  AbstractSprite* sprite = new Wolf();
   sprite->setStatus(NORMAL);
-  sprite->setPos(Point(20, 9));
+  sprite->setPos(Point(24, 13));
   sprite->setUsrFlag0(flag);
   for(;;) {
     clearBackground();
@@ -217,7 +217,7 @@ void testSprite() {
       flag = !flag;
       sprite->setUsrFlag0(flag);
     }
-    delay(333);
+    delay(100);
     do {
       inputController->poll();
       delay(50);
@@ -286,7 +286,7 @@ void mainGame() {
 }
 
 void loop() {
-  //testSprite();
+  testSprite();
   bool first = true;
   if (millis() > nextMode) {
     if (mode < 2) {
