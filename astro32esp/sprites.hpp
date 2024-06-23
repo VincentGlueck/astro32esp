@@ -5,7 +5,7 @@
 #include "sprites_ground.h"
 #include "FastRandom.hpp"
 
-// #define HUNTER_SHOOTS
+#define HUNTER_SHOOTS
 
 enum SpriteTypes {
   BIGDAISY,
