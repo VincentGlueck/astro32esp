@@ -108,7 +108,6 @@ void Scroller::addGroundObject() {
   }
 }
 
-
 void Scroller::onTick() {
   if(waitTicks > 0) waitTicks--;
   for(int z=0; z<3; z++) {
@@ -119,13 +118,16 @@ void Scroller::onTick() {
           sprites[n] = NULL;
         } else if(z == sprites[n]->getZPrio()) {
           if(speed > 1) sprites[n]->setPos(Point(sprites[n]->getPos().x - (speed-1), sprites[n]->getPos().y));
-          sprites[n]->drawOnSprite(&background);
-          sprites[n]->onTick();
-          if(sprites[n]->getClazz() == CLASS_IS_DAISY) {
-            daisyPos = sprites[n]->getPos();
-          } else if (sprites[n]->getClazz() == CLASS_IS_EGG) {
-            eggPos = sprites[n]->getPos();
+          if(sprites[n]->getSubSprite() != NULL) {
+            int idx = getFreeSlot();
+            Serial.printf("adding sub sprite at pos %d\n", idx);
+            if(idx != -1) sprites[idx] = sprites[n]->getSubSprite();
+            sprites[n]->setSubSprite(NULL);
           }
+          sprites[n]->onTick();
+          sprites[n]->setDaisyPos(daisyPos);
+          sprites[n]->setEggPos(eggPos);
+          sprites[n]->drawOnSprite(&background);
         }
       }
     }
@@ -139,10 +141,16 @@ void Scroller::onTick() {
     if(waitDog > 0) waitDog--;
     if(waitMountain > 0) waitMountain--;
     if(waitHunter > 0) waitHunter--;
-    int f = 0;
-    for(int n=0; n<MAX_GROUND_SPRITES; n++) if(sprites[n] == NULL) f++;
+    //int f = 0;
+    //for(int n=0; n<MAX_GROUND_SPRITES; n++) if(sprites[n] == NULL) f++;
     //Serial.printf("wait: fence:%d, mill:%d, corn:%d, mountain:%d, dog:%d, hunter:%d, free slots:%d\n", waitFence, waitFence, waitCorn, waitMountain, waitDog, waitHunter, f);
   }
-
 }
 
+void Scroller::setDaisyPos(Point _p) {
+  daisyPos = Point(_p.x, _p.y);
+}
+
+void Scroller::setEggPos(Point _p) {
+  eggPos = Point(_p.x, _p.y);
+}

@@ -5,34 +5,10 @@
 #include "sprites_ground.h"
 #include "FastRandom.hpp"
 
-class DaisyAwareSprite : public AbstractSprite {
-protected:
-  Point daisyPos;
-  Point eggPos;
-public:
-  DaisyAwareSprite(String _name, uint8_t _animations) : AbstractSprite(_name, _animations) {}
-  void setDaisyPos(Point _p) {
-    daisyPos = Point(_p.x, _p.y);
-  }
-  void setEggPos(Point _p) {
-    eggPos = Point(_p.x, _p.y);
-  }
-  int getClazz() {
-    return CLASS_DAISY_AWARE;
-  }
-};
 
-class DefaultSprite : public AbstractSprite {
-public:  
-  DefaultSprite(String _name, uint8_t _animations) : AbstractSprite(_name, _animations) {}
-  int getClazz() {
-    return CLASS_DEFAULT;
-  }
-};
-
-class BigDaisy : public DefaultSprite {
+class BigDaisy : public AbstractSprite {
 public:
-  BigDaisy() : DefaultSprite("Daisy", 1 ) {
+  BigDaisy() : AbstractSprite("Daisy", 1 ) {
     addSprite(SingleSprite(Dimension(121, 108), (short unsigned int*)big_daisy));
     keepInMemory = true;
     usr_dx = 8;
@@ -72,9 +48,9 @@ public:
 
 };
 
-class GetReady : public DefaultSprite {
+class GetReady : public AbstractSprite {
 public:  
-  GetReady() : DefaultSprite("gr", 1) {
+  GetReady() : AbstractSprite("gr", 1) {
     addSprite(SingleSprite(Dimension(148, 18), (short unsigned int*)get_ready));
     keepInMemory = true;
     pos.x = 80;
@@ -99,9 +75,9 @@ public:
   }
 };
 
-class Mill : public DefaultSprite {
+class Mill : public AbstractSprite {
 public:  
-  Mill() : DefaultSprite("Mill", 3) {
+  Mill() : AbstractSprite("Mill", 3) {
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill01)); // original mill03 removed (avoid flickering); image-cut fault (24 years ago)
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill02));
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill03));
@@ -125,9 +101,9 @@ public:
   }
 };
 
-class Fence : public DefaultSprite {
+class Fence : public AbstractSprite {
 public:
-  Fence() : DefaultSprite("Fence", 2) {
+  Fence() : AbstractSprite("Fence", 2) {
     addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence02));
     addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence01));
     pos.x = 305;
@@ -146,9 +122,9 @@ public:
   }
 };
 
-class Corn : public DaisyAwareSprite {
+class Corn : public AbstractSprite {
 public:
-  Corn() : DaisyAwareSprite("Corn", 2) {
+  Corn() : AbstractSprite("Corn", 2, 2) {
     addSprite(SingleSprite(Dimension(13, 28), (short unsigned int*)corn01));
     addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02));
     pos.y = 125;
@@ -163,11 +139,11 @@ public:
   }
 };
 
-class Mountain : public DefaultSprite {
+class Mountain : public AbstractSprite {
 public:
-  Mountain() : DefaultSprite("Mountain", 1) {
+  Mountain() : AbstractSprite("Mountain", 1, 2) {
     addSprite(SingleSprite(Dimension(71, 22), (short unsigned int*)mountain_raw));
-    pos.y = 129;
+    pos.y = 131;
     pos.x = 305;
   }  
 
@@ -180,9 +156,9 @@ public:
   }
 };
 
-class Dog : public DaisyAwareSprite {
+class Dog : public AbstractSprite {
 public:
-  Dog() : DaisyAwareSprite("Dog", 9) {
+  Dog() : AbstractSprite("Dog", 9) {
     addSprite(SingleSprite(Dimension(27, 21), (short unsigned int*)dog01, Point(0, 5)));
     addSprite(SingleSprite(Dimension(28, 25), (short unsigned int*)dog02, Point(0, -4)));
     addSprite(SingleSprite(Dimension(27, 29), (short unsigned int*)dog03, Point(0, -19)));
@@ -230,10 +206,6 @@ public:
     usr_flag1 = false;
   }
 
-  int getClazz() {
-    return CLASS_IS_DAISY;
-  }
-
   void onTick() {
     if(usr_flag0 != usr_flag1) {
       if(animCnt > 2) animCnt -= 3; else animCnt += 3;
@@ -251,9 +223,53 @@ public:
   }
 };
 
-class Hunter : public DaisyAwareSprite {
+class Bullet : public AbstractSprite {
 public:
-  Hunter() : DaisyAwareSprite("Hunter", 9) {
+  Bullet() : AbstractSprite("Bullet", 1) {
+    addSprite(SingleSprite(Dimension(14, 14), (short unsigned int*)bullet));
+    keepInMemory = true;
+  }
+
+  void onTick() {
+    tick++;
+    usr_dx = usr_dx + usr_ddx;
+    usr_dy = usr_dy + usr_ddy;
+    int s = 64; // bullet speed (far way = fast, near by = slower)
+    Serial.printf("calc: %d, %d\n", usr_dx >> 5, usr_dy >> 5);
+    if(usr_dx > 0) {
+      while(usr_dx > s) {
+        usr_dx -= s;
+        pos.x++;
+      }
+    } else {
+      while(usr_dx < 0) {
+        usr_dx += s;
+        pos.x--;
+      }
+    }
+    if(usr_dy > 0) {
+      while(usr_dy > s) {
+        usr_dy -= s;
+        pos.x++;
+      }
+    } else {
+      while(usr_dy < 0) {
+        usr_dy += s;
+        pos.y--;
+      }
+    }
+    if((pos.x < -10) || (pos.y < 0)) {
+      status = VANISHED;
+      pos.x = 0xffff;
+    }
+  }
+};
+
+class Hunter : public AbstractSprite {
+private:
+  Bullet* bullet;  
+public:
+  Hunter() : AbstractSprite("Hunter", 9) {
     addSprite(SingleSprite(Dimension(28, 31), (short unsigned int*)man01, Point(-3, 0)));
     addSprite(SingleSprite(Dimension(21, 35), (short unsigned int*)man02, Point(5, -4)));
     addSprite(SingleSprite(Dimension(18, 37), (short unsigned int*)man03, Point(7, -6)));
@@ -266,7 +282,7 @@ public:
     pos.y = 120;
     pos.x = 310;
     animCnt = 0;
-    usr_ddx = 1;
+    usr_a = 0;
   }
 
   void onTick() {
@@ -279,17 +295,42 @@ public:
     if(status == COLLIDED) {
       // TODO
     } else if (status == NORMAL) {
-      if((tick & 7) == 7) {
-        if(animCnt >= (animations-1)) usr_ddx = -1; else if(animCnt == 0) usr_ddx = 1;
-        animCnt += usr_ddx;
+      if(((tick & 7) == 7) && (daisyPos.x != 0xffff)) {
+        int dxDaisy = pos.x - daisyPos.x;
+        int dyDaisy = 89-(abs(pos.y - daisyPos.y));
+        if(dxDaisy < 0) {
+          if(dxDaisy < -(150+dyDaisy)) animCnt = 5; else if(dxDaisy > -(30+dyDaisy)) animCnt = 3; else animCnt = 4;
+        } else {
+          if(dxDaisy > 160-dyDaisy) animCnt = 0; else if (dxDaisy > 70-dyDaisy) animCnt = 1; else animCnt = 2;
+        }
       }
+      
+      if((usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
+        if(rnd(0x0f) == 0x0f) {
+          Point p;
+          if(animCnt == 0) p = Point(pos.x-12, pos.y-16);
+            else if (animCnt == 1) p = Point(pos.x-4, pos.y-24);
+              else if(animCnt == 4) p = Point(pos.x+8, pos.y-16);
+                else if(animCnt == 5) p = Point(pos.x+16, pos.y-8);
+                  else p = Point(pos.x+4, pos.y-16);
+          bullet = new Bullet();
+          int dx = (daisyPos.x - pos.x);
+          int dy = (daisyPos.y - pos.y);
+          Serial.printf("shooting, dx: %d, dy: %d\n", dx, dy);
+          usr_a = 50;
+          bullet->setPos(p);
+          bullet->setUsrDxDy(0, 0, dx, dy);
+          setSubSprite(bullet);
+        }
+      }
+      usr_a--;
     }
   }
 };
 
-class Gras : public DefaultSprite {
+class Gras : public AbstractSprite {
 public:
-  Gras() : DefaultSprite("Gras", 1) {
+  Gras() : AbstractSprite("Gras", 1) {
     addSprite(SingleSprite(Dimension(7, 11), (short unsigned int*)gras));
     pos.x = 310;
     pos.y = 123;
@@ -321,10 +362,6 @@ public:
     addSprite(SingleSprite(Dimension(14, 5), (short unsigned int*)eggdamaged04, Point(-1,2)));
   }
 
-  int getClazz() {
-    return CLASS_IS_EGG;
-  }
-
   void onTick() {
     tick++;
     if((tick & 0) == 0) {
@@ -334,9 +371,9 @@ public:
   }
 };
 
-class Wolf : public DaisyAwareSprite {
+class Wolf : public AbstractSprite {
 public:
-  Wolf() : DaisyAwareSprite("Wolf", 5) {
+  Wolf() : AbstractSprite("Wolf", 5) {
     addSprite(SingleSprite(Dimension(59, 11), (short unsigned int*)wulf01));
     addSprite(SingleSprite(Dimension(61, 11), (short unsigned int*)wulf02, Point(2,0)));
     addSprite(SingleSprite(Dimension(32, 32), (short unsigned int*)crashwolf01, Point(7,-10)));

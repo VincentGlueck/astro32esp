@@ -21,6 +21,8 @@ public:
   void onTick();
   void setDifficulty(uint8_t _difficulty);
   void setSpeed(uint8_t _speed);
+  void setDaisyPos(Point _p);
+  void setEggPos(Point _p);
 
 private:
   LGFX_Sprite background; 

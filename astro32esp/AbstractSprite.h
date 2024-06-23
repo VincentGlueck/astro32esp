@@ -45,7 +45,8 @@ public:
   ~AbstractSprite();
 
   virtual void onTick() {};
-  virtual int getClazz() { return CLASS_DEFAULT; };
+  void setDaisyPos(Point _p);
+  void setEggPos(Point _p);
 
   Point getPos();
   void setPos(Point _pos);
@@ -61,10 +62,11 @@ public:
   uint8_t getZPrio();
   void setZPrio(uint8_t _prio);
   void setUsrFlag0(bool _flag);
+  void setUsrDxDy(int dx, int dy=0, int ddx=0, int ddy=0);
+  void setUsrAbc(int a, int b=0, int c=0);
   String getName();
- 
-
-
+  void setSubSprite(AbstractSprite* _sprite);
+  AbstractSprite* getSubSprite();
 
 protected:
   uint8_t animCnt;
@@ -79,8 +81,11 @@ protected:
   LGFX_Sprite lgfxSprite;
   SingleSprite* sprites;
   Status status;
+  Point daisyPos;
+  Point eggPos;
   int usr_dx, usr_ddx, usr_dy, usr_ddy, usr_a, usr_b, usr_c;
   bool usr_flag0, usr_flag1;
+  AbstractSprite* subSprite = NULL;
 
 };
 

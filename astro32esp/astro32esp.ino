@@ -236,19 +236,19 @@ void handleDaisy() {
   }
   if((input & Left) == Left) {
     if((millis() >= nextPossibleHorz) || (daisyDx != 0)) {
-      if(daisyDx > -1) daisyDx--;
+      if(daisyDx > -2) daisyDx--;
       nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
   if((input & Up) == Up) {
     if((millis() >= nextPossibleVert) || (daisyDy != 0)) {
-      if(daisyDy > -1) daisyDy--;
+      if(daisyDy > -2) daisyDy--;
       nextPossibleVert = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
   if((input & Down) != 0) {
     if((millis() >= nextPossibleVert) || (daisyDy != 0)) {
-      if(daisyDy < 1) daisyDy++;
+      if(daisyDy < 2) daisyDy++;
       nextPossibleVert = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
@@ -262,6 +262,7 @@ void handleDaisy() {
     daisy->setPos(Point(x, y));
   }
   if((input & Fire) == Fire) Serial.println("Fire...");
+  scroller->setDaisyPos(daisy->getPos());
 }
 
 void mainGame() {
@@ -286,7 +287,7 @@ void mainGame() {
 }
 
 void loop() {
-  testSprite();
+  //testSprite();
   bool first = true;
   if (millis() > nextMode) {
     if (mode < 2) {
@@ -295,6 +296,7 @@ void loop() {
     } else nextMode = 1 << 30;
   }
   long t=millis();
+  if(mode == 1) mode = 2; // skip calibrate
   switch (mode) {
     case 0: hello(); break;
     case 1: calibrateTouch(); break;
