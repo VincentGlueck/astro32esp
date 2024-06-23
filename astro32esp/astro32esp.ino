@@ -286,6 +286,8 @@ void daisyFlying() {
     daisyInPeaces = new DaisyInPeaces(daisy->getPos().x, daisy->getPos().y);
     daisy->setStatus(VANISHED);
     daisy->setPos(Point(0xffff, 0));
+  } else if (scroller->isCollision(DOG, daisy)) {
+    Serial.println("Sorry, the dog goddya");
   }
 }
 
@@ -295,6 +297,8 @@ void daisyWasShot() {
   if(daisyInPeaces->isReady() && (daisyInPeaces != NULL)) {
     Serial.println("Daisy in peaces ready, next mode FLYING...");
     daisyMode = REBIRTH;
+    daisy->setPos(Point(0xffff, 0));
+    scroller->setDaisyPos(daisy->getPos());
     daisyDelay = millis() + 3000;
   }
 }
@@ -306,6 +310,8 @@ void daisyNextTry() {
       daisyMode = FLYING;
       daisy->setPos(Point(25, 50));
       daisy->setStatus(NORMAL);
+      daisyDx = 0;
+      daisyDy = 0;
       inputController->processed();
     }
   }

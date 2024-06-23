@@ -161,7 +161,10 @@ bool Scroller::isCollided(Point p0, Dimension d0, Point p1, Dimension d1) {
 bool Scroller::isCollision(int type, AbstractSprite* sprite) {
   for(int n=0; n<MAX_GROUND_SPRITES; n++) {
     if(sprites[n] != NULL) {
-      if(sprites[n]->getType() == type && isCollided(sprite->getPos(), sprite->getDimension(sprite->getAnimCnt()), sprites[n]->getPos(), sprites[n]->getDimension(sprites[n]->getAnimCnt()))) return true;
+      if(sprites[n]->getType() == type && isCollided(sprite->getPos(), sprite->getDimension(sprite->getAnimCnt()), sprites[n]->getPos(), sprites[n]->getDimension(sprites[n]->getAnimCnt()))) {
+        sprites[n] = NULL; // something must happen
+        return true;
+      };
     }
   }
   return false;

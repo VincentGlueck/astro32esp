@@ -5,6 +5,8 @@
 #include "sprites_ground.h"
 #include "FastRandom.hpp"
 
+// #define HUNTER_SHOOTS
+
 enum SpriteTypes {
   BIGDAISY,
   GETREADY,
@@ -199,10 +201,22 @@ public:
       status = VANISHED;
       pos.x = 0xffff;
     }
-    if((tick & 7) == 7) {
-      // TODO dog's logic
+    if(usr_flag0 && ((tick & 0x7) == 0x7)) {
+      animCnt++;
+      if(animCnt > 3) {
+        animCnt = 0;
+        usr_flag0 = false;
+      }
+    } else if(!usr_flag0 && ((tick & 1) == 1) && (rnd(3) == 3)) {
+      int dxDaisyX = pos.x - daisyPos.x;
+      int dxDaisyY = 89-(abs(pos.y - daisyPos.y));
+      if((abs(dxDaisyX) < 22)) {
+        if(dxDaisyY > 50) {
+          usr_flag0 = true;
+          animCnt = 1;
+        }
+      }
     }
-    
   }
 };
 
@@ -296,7 +310,7 @@ public:
           if(dxDaisy > 160-dyDaisy) animCnt = 0; else if (dxDaisy > 70-dyDaisy) animCnt = 1; else animCnt = 2;
         }
       }
-      
+#ifdef HUNTER_SHOOTS
       if((usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
         if(rnd(0x0f) == 0x0f) {
           Point p;
@@ -314,6 +328,7 @@ public:
           setSubSprite(bullet);
         }
       }
+#endif      
       usr_a--;
     }
   }
@@ -433,7 +448,6 @@ public:
         y[n] = y[n] + dy[n];
         if((tick & 3) == 3) dy[n] += ddy[n];
         if(y[n] > 200) ready = true;
-        // Serial.printf("peaces: x=%d, y=%d, dx=%d, dy=%d, ddy=%d, ready=%d\n", x[n], y[n], dx[n], dy[n], ddy[n], ready);
       }
     }
   }
