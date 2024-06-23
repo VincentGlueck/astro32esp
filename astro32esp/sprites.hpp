@@ -18,7 +18,8 @@ enum SpriteTypes {
   HUNTER,
   GRAS,
   EGG,
-  WOLF
+  WOLF,
+  DAISY_IN_PEACES
 };
 
 class BigDaisy : public AbstractSprite {
@@ -307,7 +308,6 @@ public:
           bullet = new Bullet();
           int dx = daisyPos.x - pos.x - rnd(0xf) + rnd(0x7);
           int dy = daisyPos.y - pos.y - rnd(0xf) + rnd(0x7);
-          Serial.printf("shooting, dx: %d, dy: %d\n", dx, dy);
           usr_a = 50;
           bullet->setPos(p);
           bullet->setUsrDxDy(0, 0, dx, dy);
@@ -392,6 +392,69 @@ public:
       pos.x = 0xffff;
     }
 
+  }
+};
+
+class DaisyInPeaces : public AbstractSprite {
+private:
+  int x[7];
+  int y[7];
+  int dx[7];
+  int dy[7];
+  int ddy[7];
+  bool ready;  
+public:
+  DaisyInPeaces(int daisyX, int daisyY) : AbstractSprite (DAISY_IN_PEACES, 7) {
+    addSprite(SingleSprite(Dimension(6, 11), (short unsigned int*)pieces01));
+    addSprite(SingleSprite(Dimension(9, 10), (short unsigned int*)pieces02));
+    addSprite(SingleSprite(Dimension(10, 11), (short unsigned int*)pieces03));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)pieces04));
+    addSprite(SingleSprite(Dimension(9, 10), (short unsigned int*)pieces05));
+    addSprite(SingleSprite(Dimension(6, 4), (short unsigned int*)pieces06));
+    addSprite(SingleSprite(Dimension(5, 4), (short unsigned int*)pieces07));
+    for(int n=0; n<animations; n++) {
+      x[n] = daisyX;
+      y[n] = daisyY;
+      dx[n] = 4-rnd(7);
+      dy[n] = -2 - rnd(3);
+      ddy[n] = rnd(1) + 1;
+    }
+    pos.x = daisyPos.x;
+    pos.y = daisyPos.y;
+    ready = false;
+  }
+
+  void onTick() {
+    tick++;
+    ready = false;
+    if((tick & 0x1) == 0x1) {
+      for(int n=0; n<animations; n++) {
+        x[n] = x[n] + dx[n];
+        y[n] = y[n] + dy[n];
+        if((tick & 3) == 3) dy[n] += ddy[n];
+        if(y[n] > 200) ready = true;
+        // Serial.printf("peaces: x=%d, y=%d, dx=%d, dy=%d, ddy=%d, ready=%d\n", x[n], y[n], dx[n], dy[n], ddy[n], ready);
+      }
+    }
+  }
+
+  bool isReady() {
+    return ready;
+  }
+
+  void drawAllOnBackground(LGFX_Sprite* background) {
+    for(int n=0; n<animations; n++) {
+       if(lgfxSprite.createSprite(sprites[n].dimension.width, sprites[n].dimension.height)) {
+        lgfxSprite.setSwapBytes(true);
+        lgfxSprite.pushImage(0, 0, sprites[n].dimension.width, sprites[n].dimension.height, &sprites[n].ptr[0]);
+        // Serial.printf("push sprite to %d, %d\n", x[n], y[n]);
+        lgfxSprite.pushSprite(background, x[n], y[n], 0x0000);
+        lgfxSprite.deleteSprite();
+      } else {
+        Serial.println("Out of memory!");
+        sleep(10000);
+      }
+    }
   }
 };
 

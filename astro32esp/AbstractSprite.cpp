@@ -1,6 +1,6 @@
 #include "AbstractSprite.h"
 
-// #define DEBUG_FRAME
+//#define DEBUG_FRAME
 
 AbstractSprite::AbstractSprite(int _type, uint8_t _animations, uint8_t _zPrio) {
   type = _type;
@@ -94,7 +94,7 @@ void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
       lgfxSprite.setSwapBytes(true);
       lgfxSprite.pushImage(0, 0, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
 #ifdef DEBUG_FRAME
-      lgfxSprite.drawRect(0, 0, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, TFT_WHITE);
+      lgfxSprite.drawRect(0, 0, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, TFT_DARKCYAN);
 #endif      
       loaded = true;
     } else {

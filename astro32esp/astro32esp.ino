@@ -15,6 +15,16 @@ SimpleScreenTexts* screenTexts;
 #define EXTRA_BOTTOM 28
 #define MIN_NEXT_DIRECTION_MS 400;
 
+enum DaisyMode {
+  FLYING,
+  REBIRTH,
+  HIT_BY_BULLET,
+  ATE_BY_DOG,
+  GOT_FENCE,
+  MILL_CRASH,
+  WOLF_CRASH
+};
+
 const long TOUCH_REPEAT = 80;            // how often (ms) is (long)touch possible
 const int SCREEN_LEFT = 5;
 const int SCREEN_TOP = 37;
@@ -38,11 +48,14 @@ InputController* inputController;
 Title* title;
 BigDaisy* bigDaisy = NULL;
 Daisy* daisy;
+DaisyInPeaces *daisyInPeaces;
 Scroller* scroller;
 GetReady* getReady;
+long daisyDelay;
 
 uint16_t score;
 uint8_t miscMode;
+uint8_t daisyMode = FLYING;
 
 LGFX_Sprite background;
 
@@ -265,6 +278,39 @@ void handleDaisy() {
   scroller->setDaisyPos(daisy->getPos());
 }
 
+void daisyFlying() {
+  daisy->drawOnSprite(&background);
+  daisy->onTick();
+  if(scroller->isCollision(BULLET, daisy)) {
+    daisyMode = DAISY_IN_PEACES;
+    daisyInPeaces = new DaisyInPeaces(daisy->getPos().x, daisy->getPos().y);
+    daisy->setStatus(VANISHED);
+    daisy->setPos(Point(0xffff, 0));
+  }
+}
+
+void daisyWasShot() {
+  daisyInPeaces->onTick();
+  daisyInPeaces->drawAllOnBackground(&background);
+  if(daisyInPeaces->isReady() && (daisyInPeaces != NULL)) {
+    Serial.println("Daisy in peaces ready, next mode FLYING...");
+    daisyMode = REBIRTH;
+    daisyDelay = millis() + 3000;
+  }
+}
+
+void daisyNextTry() {
+  if((globalCnt & 0x0f) == 0x0f) {
+    if(millis() > daisyDelay) {
+      Serial.println("Rebirth of daisy");
+      daisyMode = FLYING;
+      daisy->setPos(Point(25, 50));
+      daisy->setStatus(NORMAL);
+      inputController->processed();
+    }
+  }
+}
+
 void mainGame() {
   if (modeDone != mode) {
     restoreBg();
@@ -277,11 +323,13 @@ void mainGame() {
   } else {
     clearBackground();
     scroller->onTick();
-    if(scroller->isCollision(BULLET, daisy)) {
-      Serial.println("Hit by bullet!");
+    if(daisyMode == FLYING) {
+      daisyFlying();
+    } else if(daisyMode == DAISY_IN_PEACES) {
+      daisyWasShot();
+    } else if(daisyMode == REBIRTH) {
+      daisyNextTry();
     }
-    daisy->drawOnSprite(&background);
-    daisy->onTick();
     drawPlayfield();
     inputController->processed();
     inputController->poll();
@@ -290,7 +338,7 @@ void mainGame() {
 }
 
 void loop() {
-  //testSprite();
+  // testSprite();
   bool first = true;
   if (millis() > nextMode) {
     if (mode < 2) {
