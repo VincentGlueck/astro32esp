@@ -248,8 +248,8 @@ public:
     tick++;
     usr_dx = usr_dx + usr_ddx;
     usr_dy = usr_dy + usr_ddy;
-    pos.x += usr_dx >> 9;
-    pos.y += usr_dy >> 9;
+    pos.x += (usr_dx >> 10) + (usr_dx >> 11);
+    pos.y += (usr_dy >> 10) + (usr_dy >> 11);
     if((pos.x < -10) || (pos.y < 0)) {
       status = VANISHED;
       pos.x = 0xffff;
@@ -271,7 +271,7 @@ public:
     addSprite(SingleSprite(Dimension(25, 32), (short unsigned int*)man07, Point(5, 0)));
     addSprite(SingleSprite(Dimension(31, 37), (short unsigned int*)man08, Point(2, -4)));
     addSprite(SingleSprite(Dimension(44, 11), (short unsigned int*)man09, Point(0, 20)));
-    pos.y = 120;
+    pos.y = 119;
     pos.x = 310;
     usr_a = 0;
   }
