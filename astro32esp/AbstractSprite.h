@@ -40,7 +40,7 @@ struct SingleSprite {
 class AbstractSprite {
 public:
 
-  AbstractSprite(String _name, uint8_t _animations = 1, uint8_t _zPro = 0);
+  AbstractSprite(int _type, uint8_t _animations = 1, uint8_t _zPro = 0);
   AbstractSprite();
   ~AbstractSprite();
 
@@ -64,9 +64,12 @@ public:
   void setUsrFlag0(bool _flag);
   void setUsrDxDy(int dx, int dy=0, int ddx=0, int ddy=0);
   void setUsrAbc(int a, int b=0, int c=0);
-  String getName();
+  int getType();
   void setSubSprite(AbstractSprite* _sprite);
   AbstractSprite* getSubSprite();
+  void setHit();
+  bool isHit();
+  bool isCollided(AbstractSprite* other);
 
 protected:
   uint8_t animCnt;
@@ -77,7 +80,7 @@ protected:
   uint8_t zPrio = 0;
   uint16_t tick;
   Point pos;
-  String name;
+  int type;
   LGFX_Sprite lgfxSprite;
   SingleSprite* sprites;
   Status status;
@@ -85,6 +88,7 @@ protected:
   Point eggPos;
   int usr_dx, usr_ddx, usr_dy, usr_ddy, usr_a, usr_b, usr_c;
   bool usr_flag0, usr_flag1;
+  bool hit;
   AbstractSprite* subSprite = NULL;
 
 };

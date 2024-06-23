@@ -277,6 +277,9 @@ void mainGame() {
   } else {
     clearBackground();
     scroller->onTick();
+    if(scroller->isCollision(BULLET, daisy)) {
+      Serial.println("Hit by bullet!");
+    }
     daisy->drawOnSprite(&background);
     daisy->onTick();
     drawPlayfield();

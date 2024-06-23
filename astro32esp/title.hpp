@@ -10,7 +10,7 @@ private:
   int ddt = 1;
 
 public:
-  Title() : AbstractSprite("title", 14) {
+  Title() : AbstractSprite(-1, 14) {
     addSprite(SingleSprite(Dimension(34, 29), (short unsigned int*)title_A));
     addSprite(SingleSprite(Dimension(27, 28), (short unsigned int*)title_S));
     addSprite(SingleSprite(Dimension(24, 26), (short unsigned int*)title_T));

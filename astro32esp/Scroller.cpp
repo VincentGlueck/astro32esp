@@ -27,12 +27,6 @@ uint8_t Scroller::getFreeSlot() {
     n++;
   }
   Serial.println("Out of slots!");
-  for(int n=0; n<MAX_GROUND_SPRITES; n++) {
-    Serial.printf("n:%d :", n);
-    if(sprites[n] != NULL) {
-      Serial.printf("is a %s, pos.x: %d, status: %d\n", sprites[n]->getName(), sprites[n]->getPos().x, sprites[n]->getStatus());
-    } else Serial.printf("NULL\n");
-  }
   return -1;
 }
 
@@ -120,7 +114,6 @@ void Scroller::onTick() {
           if(speed > 1) sprites[n]->setPos(Point(sprites[n]->getPos().x - (speed-1), sprites[n]->getPos().y));
           if(sprites[n]->getSubSprite() != NULL) {
             int idx = getFreeSlot();
-            Serial.printf("adding sub sprite at pos %d\n", idx);
             if(idx != -1) sprites[idx] = sprites[n]->getSubSprite();
             sprites[n]->setSubSprite(NULL);
           }
@@ -153,4 +146,23 @@ void Scroller::setDaisyPos(Point _p) {
 
 void Scroller::setEggPos(Point _p) {
   eggPos = Point(_p.x, _p.y);
+}
+
+bool Scroller::isCollided(Point p0, Dimension d0, Point p1, Dimension d1) {
+  if (p0.x + d0.width <= p1.x || p1.x + d1.width <= p0.x) {
+    return false;
+  }
+  if (p0.y + d0.height <= p1.y || p1.y + d1.height <= p0.y) {
+    return false;
+  }
+  return true;
+}
+
+bool Scroller::isCollision(int type, AbstractSprite* sprite) {
+  for(int n=0; n<MAX_GROUND_SPRITES; n++) {
+    if(sprites[n] != NULL) {
+      if(sprites[n]->getType() == type && isCollided(sprite->getPos(), sprite->getDimension(sprite->getAnimCnt()), sprites[n]->getPos(), sprites[n]->getDimension(sprites[n]->getAnimCnt()))) return true;
+    }
+  }
+  return false;
 }

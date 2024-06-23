@@ -1,27 +1,32 @@
 #include "AbstractSprite.h"
 
-#define DEBUG_FRAME
+// #define DEBUG_FRAME
 
-AbstractSprite::AbstractSprite(String _name, uint8_t _animations, uint8_t _zPrio) {
-  name = _name;
+AbstractSprite::AbstractSprite(int _type, uint8_t _animations, uint8_t _zPrio) {
+  type = _type;
   animations = _animations;
+  zPrio = _zPrio;
   tick = 0;
   loadedAnims = 0;
   keepInMemory = false;
   loaded = false;
   animCnt = 0;
-  zPrio = _zPrio;
+  hit = false;
   status = NORMAL;
   sprites = new SingleSprite[animations];
 }
 
 AbstractSprite::~AbstractSprite() {
-  if(keepInMemory && loaded) lgfxSprite.deleteSprite();
+  if(!keepInMemory && loaded) lgfxSprite.deleteSprite();
   delete[] sprites;
 }
 
 Point AbstractSprite::getPos() {
   return pos;
+}
+
+bool AbstractSprite::isCollided(AbstractSprite* other) {
+  return false;
 }
 
 void AbstractSprite::setDaisyPos(Point _p) {
@@ -65,12 +70,12 @@ void AbstractSprite::addSprite(SingleSprite _sprite) {
   if(loadedAnims < animations) {
     sprites[loadedAnims++] = _sprite;
   } else {
-    Serial.printf("Attempt to load more than %d sprites for %s!\n", animations, name);
+    Serial.printf("Attempt to load more than %d sprites for %d!\n", animations, type);
   }
 }
 
 void AbstractSprite::setAnimCnt(uint8_t _cnt) {
-  if(_cnt < animations) animCnt = _cnt; else Serial.printf("%s does not have %d frames (%d)", name, _cnt, animations);
+  if(_cnt < animations) animCnt = _cnt; else Serial.printf("%d does not have %d frames (%d)!\n", type, _cnt, animations);
 }
 
 void AbstractSprite::setUsrFlag0(bool _flag) {
@@ -80,7 +85,7 @@ void AbstractSprite::setUsrFlag0(bool _flag) {
 void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
   bool outOfMemory = false;
   if(loadedAnims < animations) {
-    Serial.printf("FATAL, sprite '%s' has only loaded %d of %d!", name, loadedAnims, animations);
+    Serial.printf("FATAL, sprite '%d' has only loaded %d of %d!", type, loadedAnims, animations);
     sleep(10000);
   }
   if((status == VANISHED) || (pos.x == 0xffff)) return; // sprite is gone or out of visible range
@@ -101,6 +106,14 @@ void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
     lgfxSprite.pushSprite(background, pos.x + sprites[animCnt].delta.x, pos.y + sprites[animCnt].delta.y, 0x0000);
     if(!keepInMemory) lgfxSprite.deleteSprite();
   }
+}
+
+bool AbstractSprite::isHit() {
+  return hit;
+}
+
+void AbstractSprite::setHit() {
+  hit = true;
 }
 
 bool AbstractSprite::isLoaded() {
@@ -134,8 +147,8 @@ void AbstractSprite::setZPrio(uint8_t _prio) {
   zPrio = _prio;
 }
 
-String AbstractSprite::getName() {
-  return name;
+int AbstractSprite::getType() {
+  return type;
 }
 
 

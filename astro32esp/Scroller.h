@@ -3,7 +3,7 @@
 
 #include "sprites.hpp"
 
-#define MAX_GROUND_SPRITES 20
+#define MAX_GROUND_SPRITES 32
 #define MIN_NEXT_TICKS 10
 #define MIN_NEXT_MILL 12
 #define MIN_NEXT_FENCE 15
@@ -23,6 +23,7 @@ public:
   void setSpeed(uint8_t _speed);
   void setDaisyPos(Point _p);
   void setEggPos(Point _p);
+  bool isCollision(int type, AbstractSprite* sprite);
 
 private:
   LGFX_Sprite background; 
@@ -35,6 +36,7 @@ private:
   void createDog(uint8_t idx);
   void createHunter(uint8_t idx);
   uint8_t getFreeSlot();
+  bool isCollided(Point p0, Dimension d0, Point p1, Dimension d1);
   
   uint8_t difficulty = 0;
   uint8_t waitTicks = MIN_NEXT_TICKS;
