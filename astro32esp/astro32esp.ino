@@ -33,6 +33,7 @@ int daisyDy = 0;
 int daisyFenceCnt = -1;
 int eggs;
 int oldEggs;
+int waitCorn;
 int daisyWithFenceDelay;
 long nextPossibleHorz = 0;
 long nextPossibleVert = 0;
@@ -45,6 +46,7 @@ Daisy* daisy;
 DaisyInPeaces *daisyInPeaces;
 Scroller* scroller;
 GetReady* getReady;
+Point lastDaisyPos;
 long daisyDelay;
 
 uint16_t score;
@@ -60,6 +62,9 @@ String getAllHeap(){
   return temp;
 }
 
+bool isGlobal(uint8_t mask) {
+  return (globalCnt & mask) == mask;
+}
 
 void clearBackground() {
   background.setSwapBytes(true);
@@ -164,13 +169,13 @@ void menu() {
 void gameOver() {
   if (mode != modeDone) {
     modeDone = mode;
-  } else if ((globalCnt & 0x3fff) == 0x3fff) {
-    int color = (globalCnt & 0x7fff) == 0x7fff ? TFT_WHITE : TFT_DARKGRAY;
+  } else if (isGlobal(0x3fff)) {
+    int color = isGlobal(0x7fff) ? TFT_WHITE : TFT_DARKGRAY;
     clearBackground();
-    // screenTexts->spriteBig("Game over", &background, color);
+    screenTexts->spriteBig("Game over", &background, color);
     drawPlayfield();
   }
-  if ((globalCnt & 0x7f) == 0x7f) {
+  if (isGlobal(0x7f)) {
     inputController->poll();
     if (inputController->getInput() != Nothing) {
       inputController->processed();
@@ -200,7 +205,7 @@ void setup() {
 
 void testSprite() {
   bool flag = false;
-  AbstractSprite* sprite = new Mill();
+  AbstractSprite* sprite = new Corn();
   sprite->setStatus(NORMAL);
   sprite->setPos(Point(20, 13));
   sprite->setUsrFlag0(flag);
@@ -225,6 +230,8 @@ void testSprite() {
     lcd.setTextColor(TFT_WHITE);
     lcd.drawString(String(sprite->getAnimCnt()), 20, 100, 4);
     sprite->onTick();
+    flag = !flag;
+    sprite->setAnimCnt(flag ? 1 : 0);
     sprite->setPos(Point(20, sprite->getPos().y));
     delay(100);
     do {
@@ -237,8 +244,8 @@ void testSprite() {
 
 void drawEggs() {
   lcd.setTextColor(TFT_WHITE);
-  lcd.fillRect(200, 230, 24, 8, TFT_RED);
-  lcd.drawString(String(eggs), 200, 230);
+  lcd.fillRect(172, 226, 24, 8, TFT_RED);
+  lcd.drawString(String(eggs), 172, 226);
   oldEggs = eggs;
 }
 
@@ -272,7 +279,7 @@ void handleDaisy() {
   int y = daisy->getPos().y;
   x += daisyDx;
   y += daisyDy;
-  if((globalCnt & 0) == 0) {
+  if(isGlobal(0)) {
     if(x < 10) x = 10; else if (x > 170) x = 170;
     if(y < 5) y = 5; else if (y > 107) y = 107;
     daisy->setPos(Point(x, y));
@@ -284,9 +291,11 @@ void handleDaisy() {
 void backToLife() {
   daisyMode = REBIRTH;
   daisyDelay = millis() + 1500;
+  daisy->setPos(Point(lastDaisyPos.x, lastDaisyPos.y));
 }
 
 void daisyFlying() {
+  if(daisy->getStatus() == VANISHED) return;
   if(daisy->getStatus() == NORMAL) daisy->drawOnSprite(&background);
   daisy->onTick();
   if(daisy->getStatus() != VANISHED) {
@@ -297,19 +306,23 @@ void daisyFlying() {
     if (scroller->isCollision(DOG, daisy)) daisyMode = ATE_BY_DOG;
     if (scroller->isCollision(MILL, daisy)) daisyMode = MILL_CRASH;
     if (scroller->isCollision(WOLF, daisy)) {
-      
+      daisyMode = WOLF_CRASH;
     }
     if (scroller->isCollision(FENCE, daisy)) {
       daisyWithFenceDelay = 4;
       daisyFenceCnt = 200;
-    } else if (scroller->isCollision(CORN, daisy)) {
-      Serial.printf("corn %d\n", eggs);
+    } else if ((scroller->isCollision(CORN, daisy)) && (waitCorn <= 0)) {
       eggs++;
+      waitCorn = 12;  // TODO: this is hacky
     }
+    waitCorn--;
     if(daisyWithFenceDelay > 0) {
       daisyWithFenceDelay--;
       if(daisyWithFenceDelay == 0) daisy->setUsrFlag0(true);
     }
+  } else {
+    daisyDx = 0;
+    daisyDy = 0;
   }
 }
 
@@ -327,9 +340,8 @@ void daisyWasShot() {
 }
 
 void daisyNextTry() {
-  if((globalCnt & 0x0f) == 0x0f) {
+  if(isGlobal(0xf)) {
     if(millis() > daisyDelay) {
-      daisy->setPos(Point(25, 50));
       daisy->setStatus(NORMAL);
       daisyDx = 0;
       daisyDy = 0;
@@ -353,6 +365,7 @@ void mainGame() {
     daisyDy = 0;
     eggs = 3;
     oldEggs = -1;
+    waitCorn = 0;
     daisyDelay = millis() + 1500;
     daisyMode = FLYING;
     inputController->getInput();
@@ -362,7 +375,7 @@ void mainGame() {
     clearBackground();
     scroller->onTick();
     if(daisyMode == FLYING || daisyMode == PROTECTED) {
-      if(daisyMode == PROTECTED) daisy->setStatus(((globalCnt & 2) == 2) ? NORMAL : INVISIBLE);
+      if(daisyMode == PROTECTED) daisy->setStatus((isGlobal(2) ? NORMAL : INVISIBLE));
       daisyFlying();
     } else if(daisyMode == HIT_BY_BULLET) {
       daisyAway();
@@ -375,9 +388,15 @@ void mainGame() {
     } else if(daisyMode == ATE_BY_DOG) {
       daisyAway();
       backToLife();
+    } else if (daisyMode == WOLF_CRASH) {
+      daisyAway();
+      backToLife();07;
     } else if (daisyMode == GOT_FENCE) {
       daisy->setAnimCnt(daisy->getAnimCnt() + 3);
       daisyMode = FLYING;
+    } else if (daisyMode == WOLF_CRASH) {
+      daisyAway();
+      backToLife();
     } else if(daisyMode == REBIRTH) {
       daisyNextTry();
     }
@@ -392,6 +411,10 @@ void mainGame() {
     inputController->processed();
     inputController->poll();
     handleDaisy();
+    if(daisy->getPos().x != 0xffff) {
+      lastDaisyPos = Point(daisy->getPos().x, daisy->getPos().y);
+      // Serial.printf("last set to %d, %d\n", lastDaisyPos.x, lastDaisyPos.y);
+    }
     if(daisyFenceCnt > 0) daisyFenceCnt--; else if (daisyFenceCnt == 0) {
       daisyFenceCnt--;
       daisy->setUsrFlag0(false);

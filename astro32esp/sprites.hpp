@@ -159,7 +159,7 @@ class Corn : public AbstractSprite {
 public:
   Corn() : AbstractSprite(CORN, 2, 2) {
     addSprite(SingleSprite(Dimension(13, 28), (short unsigned int*)corn01));
-    addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02, Point(0, 5)));
+    addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02, Point(0, 8)));
     pos.y = 125;
   }
 
@@ -405,14 +405,18 @@ public:
     usr_flag0 = false;
     usr_flag1 = false;
     pos.x = 310;
-    pos.y = daisyPos.y - 16 + rnd() >> 3;
+    pos.y = 40+rnd(0x3f);
+    if(daisyPos.x != 0xffff) pos.y = daisyPos.y - 16 + (rnd() >> 5);
   }
 
   void onTick() {
     tick++;
     if((tick & 3) == 3) {
+      if((daisyPos.x > pos.x) && (rnd(3) == 3)) pos.x--;
+      if((daisyPos.x < pos.x) && (rnd(3) == 3)) pos.x++;
       animCnt++;
       if(status == COLLIDED) {
+        if(animCnt < 2) animCnt = 2;
         if(animCnt >= animations) animCnt = 2;  
       } else {
         if(animCnt > 1) animCnt = 0;

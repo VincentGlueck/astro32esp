@@ -83,7 +83,7 @@ void Scroller::createHunter(uint8_t idx) {
 }
 
 void Scroller::createWolf(uint8_t idx) {
-  if((waitWolf > 0 || (daisyPos == 0xffff)) return;
+  if((waitWolf > 0) || (daisyPos.x == 0xffff)) return;
   sprites[idx] = new Wolf();
   waitWolf = MIN_NEXT_WOLF + rnd(0xf);
 }
@@ -178,6 +178,8 @@ bool Scroller::isCollision(int type, AbstractSprite* sprite) {
           sprites[n]->setAnimCnt(4);
           sprites[n]->setUsrFlag0(false);
           sprites[n]->setUsrFlag1(true);
+        } else if((sprites[n]->getType() == WOLF) && (sprites[n]->getStatus() != COLLIDED)) {
+          sprites[n]->setStatus(COLLIDED);
         }
         return true;
       };

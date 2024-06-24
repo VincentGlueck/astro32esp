@@ -21,7 +21,7 @@ public:
     }
     Serial.printf("input x: %d, y: %d\n", x, y);
     userInput = Nothing;
-    if(x > 130) {
+    if(x > 150) {
       userInput = Right;
     } else if (x < 70) {
       userInput = Left;
