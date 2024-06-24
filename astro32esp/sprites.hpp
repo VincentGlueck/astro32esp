@@ -72,7 +72,8 @@ public:
     addSprite(SingleSprite(Dimension(148, 18), (short unsigned int*)get_ready));
     keepInMemory = true;
     pos.x = 80;
-    pos.y = 98;
+    pos.y = 58;
+    usr_dy = pos.y;
     usr_dx = 1;
   }
 
@@ -88,30 +89,43 @@ public:
         usr_dx = 1;
       }
     }
-    pos.y = 107 + rnd(3);
+    pos.y = usr_dy + rnd(3);
+    if(((tick & 1) == 1) && (usr_dy < 98)) usr_dy++;
     status = ((tick >> 2) & 3) < 1 ? VANISHED : NORMAL;
   }
 };
 
 class Mill : public AbstractSprite {
 public:  
-  Mill() : AbstractSprite(MILL, 3) {
-    addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill01)); // original mill03 removed (avoid flickering); image-cut fault (24 years ago)
+  Mill() : AbstractSprite(MILL, 8) {
+    addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill01)); // original mill03 removed (to avoid flickering); gfx was misplaced 23 year ago and cannot be fixed
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill02));
     addSprite(SingleSprite(Dimension(24, 70), (short unsigned int*)mill03));
+    addSprite(SingleSprite(Dimension(34, 70), (short unsigned int*)millcrash01, Point(-10, 0)));
+    addSprite(SingleSprite(Dimension(33, 70), (short unsigned int*)millcrash02, Point(-4, -1)));
+    addSprite(SingleSprite(Dimension(33, 70), (short unsigned int*)millcrash03, Point(-4, -1)));
+    addSprite(SingleSprite(Dimension(32, 70), (short unsigned int*)millcrash04, Point(-1, -1)));
+    addSprite(SingleSprite(Dimension(33, 70), (short unsigned int*)millcrash05, Point(0, -1)));
     pos.x = 305;
     pos.y = 86;
+    usr_flag0 = false;
   }
 
   void onTick() {
     tick++;
-    if((tick & 1) == 1) {
-      animCnt++;
-      if(animCnt >= animations) animCnt = 0;
-    }
     if(status == NORMAL) {
+      if(!usr_flag0 && (tick & 1) == 1) {
+        animCnt++;
+        if(animCnt > 2) animCnt = 0;
+      } else if(usr_flag0 && ((tick & 3) == 3)) {
+        animCnt++;
+        if(animCnt >= animations) {
+          animCnt = rnd(1);
+          usr_flag0 = false;
+        }
+      }
       pos.x--;
-      if(pos.x < -19) {
+      if(pos.x < -29) {
         status = VANISHED;
         pos.x = 0xffff;
       }
@@ -192,6 +206,7 @@ public:
     pos.x = 305;
     animCnt = 0;
     usr_flag0 = false; // jump
+    usr_flag1 = false; // goddya
   }
 
   void onTick() {
@@ -207,6 +222,8 @@ public:
         animCnt = 0;
         usr_flag0 = false;
       }
+    } else if(usr_flag1 && ((tick & 0x7) == 0x7)) {
+      if(animCnt < 6) animCnt++;
     } else if(!usr_flag0 && ((tick & 1) == 1) && (rnd(3) == 3)) {
       int dxDaisyX = pos.x - daisyPos.x;
       int dxDaisyY = 89-(abs(pos.y - daisyPos.y));
@@ -298,14 +315,14 @@ public:
       status = VANISHED;
       pos.x = 0xffff;
     }
-    if(status == COLLIDED) {
-      // TODO
+    if(daisyMode != FLYING) {
+      animCnt = 0;
     } else if (status == NORMAL) {
       if(((tick & 7) == 7) && (daisyPos.x != 0xffff)) {
         int dxDaisy = pos.x - daisyPos.x;
         int dyDaisy = 89-(abs(pos.y - daisyPos.y));
         if(dxDaisy < 0) {
-          if(dxDaisy < -(150+dyDaisy)) animCnt = 5; else if(dxDaisy > -(30+dyDaisy)) animCnt = 3; else animCnt = 4;
+          if(dxDaisy < -(180+dyDaisy)) animCnt = 5; else if(dxDaisy > -(70+dyDaisy)) animCnt = 3; else animCnt = 4;
         } else {
           if(dxDaisy > 160-dyDaisy) animCnt = 0; else if (dxDaisy > 70-dyDaisy) animCnt = 1; else animCnt = 2;
         }

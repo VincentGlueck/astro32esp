@@ -118,7 +118,7 @@ void Scroller::onTick() {
             sprites[n]->setSubSprite(NULL);
           }
           sprites[n]->onTick();
-          sprites[n]->setDaisyPos(daisyPos);
+          sprites[n]->setDaisyPos(daisyPos, daisyMode);
           sprites[n]->setEggPos(eggPos);
           sprites[n]->drawOnSprite(&background);
         }
@@ -134,14 +134,12 @@ void Scroller::onTick() {
     if(waitDog > 0) waitDog--;
     if(waitMountain > 0) waitMountain--;
     if(waitHunter > 0) waitHunter--;
-    //int f = 0;
-    //for(int n=0; n<MAX_GROUND_SPRITES; n++) if(sprites[n] == NULL) f++;
-    //Serial.printf("wait: fence:%d, mill:%d, corn:%d, mountain:%d, dog:%d, hunter:%d, free slots:%d\n", waitFence, waitFence, waitCorn, waitMountain, waitDog, waitHunter, f);
-  }
+   }
 }
 
-void Scroller::setDaisyPos(Point _p) {
+void Scroller::setDaisyPos(Point _p, int _mode) {
   daisyPos = Point(_p.x, _p.y);
+  daisyMode = _mode;
 }
 
 void Scroller::setEggPos(Point _p) {
@@ -162,7 +160,18 @@ bool Scroller::isCollision(int type, AbstractSprite* sprite) {
   for(int n=0; n<MAX_GROUND_SPRITES; n++) {
     if(sprites[n] != NULL) {
       if(sprites[n]->getType() == type && isCollided(sprite->getPos(), sprite->getDimension(sprite->getAnimCnt()), sprites[n]->getPos(), sprites[n]->getDimension(sprites[n]->getAnimCnt()))) {
-        sprites[n] = NULL; // something must happen
+         if(sprites[n]->getType() == MILL) {
+          sprites[n]->setUsrFlag0(true);
+          sprites[n]->setAnimCnt(3);
+        } else if(sprites[n]->getType() == FENCE) {
+          sprites[n]->setAnimCnt(1);
+        } else if(sprites[n]->getType() == DOG) {
+          sprites[n]->setAnimCnt(4);
+          sprites[n]->setUsrFlag0(false);
+          sprites[n]->setUsrFlag1(true);
+        } else {
+          sprites[n] = NULL; // remove, main prog takes over
+        }
         return true;
       };
     }

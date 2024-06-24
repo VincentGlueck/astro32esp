@@ -15,16 +15,6 @@ SimpleScreenTexts* screenTexts;
 #define EXTRA_BOTTOM 28
 #define MIN_NEXT_DIRECTION_MS 400;
 
-enum DaisyMode {
-  FLYING,
-  REBIRTH,
-  HIT_BY_BULLET,
-  ATE_BY_DOG,
-  GOT_FENCE,
-  MILL_CRASH,
-  WOLF_CRASH
-};
-
 const long TOUCH_REPEAT = 80;            // how often (ms) is (long)touch possible
 const int SCREEN_LEFT = 5;
 const int SCREEN_TOP = 37;
@@ -40,6 +30,7 @@ uint8_t modeDone = 0xff;
 uint8_t subMode = 0;
 int daisyDx = 0;
 int daisyDy = 0;
+int daisyFenceCnt = -1;
 long nextPossibleHorz = 0;
 long nextPossibleVert = 0;
 
@@ -201,17 +192,18 @@ void setup() {
 
 void testSprite() {
   bool flag = false;
-  AbstractSprite* sprite = new Wolf();
+  AbstractSprite* sprite = new Mill();
   sprite->setStatus(NORMAL);
-  sprite->setPos(Point(24, 13));
+  sprite->setPos(Point(20, 13));
   sprite->setUsrFlag0(flag);
   for(;;) {
     clearBackground();
     background.setColor(TFT_DARKGRAY);
-    background.drawFastHLine(0, 10, 320);
-    background.drawFastHLine(0, 20, 320);
-    background.drawFastHLine(0, 30, 320);
-    background.drawFastHLine(0, 40, 320);
+    background.drawFastHLine(0, 50, 320);
+    background.drawFastHLine(0, 60, 320);
+    background.drawFastHLine(0, 70, 320);
+    background.drawFastHLine(0, 80, 320);
+    background.drawFastHLine(0, 90, 320);
     // background.drawFastHLine(0, 50, 320);
     for(int n=0; n<80; n+=79) {
       background.drawFastVLine(10+n, 0, 240);
@@ -226,10 +218,6 @@ void testSprite() {
     lcd.drawString(String(sprite->getAnimCnt()), 20, 100, 4);
     sprite->onTick();
     sprite->setPos(Point(20, sprite->getPos().y));
-    if(rnd() < 8) {
-      flag = !flag;
-      sprite->setUsrFlag0(flag);
-    }
     delay(100);
     do {
       inputController->poll();
@@ -261,7 +249,7 @@ void handleDaisy() {
   }
   if((input & Down) != 0) {
     if((millis() >= nextPossibleVert) || (daisyDy != 0)) {
-      if(daisyDy < 2) daisyDy++;
+      if(daisyDy < 1) daisyDy++;
       nextPossibleVert = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
@@ -275,46 +263,65 @@ void handleDaisy() {
     daisy->setPos(Point(x, y));
   }
   if((input & Fire) == Fire) Serial.println("Fire...");
-  scroller->setDaisyPos(daisy->getPos());
+  scroller->setDaisyPos(daisy->getPos(), daisyMode);
+}
+
+void backToLife() {
+  daisyMode = REBIRTH;
+  daisyDelay = millis() + 1500;
 }
 
 void daisyFlying() {
-  daisy->drawOnSprite(&background);
+  if(daisy->getStatus() == NORMAL) daisy->drawOnSprite(&background);
   daisy->onTick();
-  if(scroller->isCollision(BULLET, daisy)) {
-    daisyMode = DAISY_IN_PEACES;
-    daisyInPeaces = new DaisyInPeaces(daisy->getPos().x, daisy->getPos().y);
-    daisy->setStatus(VANISHED);
-    daisy->setPos(Point(0xffff, 0));
-  } else if (scroller->isCollision(DOG, daisy)) {
-    Serial.println("Sorry, the dog goddya");
+  if(daisy->getStatus() != VANISHED) {
+    daisy->setStatus(((globalCnt >> 3) && 1) == 1 ? NORMAL : VANISHED);
+    if(scroller->isCollision(BULLET, daisy)) {
+      daisyMode = HIT_BY_BULLET;
+      daisyInPeaces = new DaisyInPeaces(daisy->getPos().x, daisy->getPos().y);
+    } else if (scroller->isCollision(DOG, daisy)) {
+      daisyMode = ATE_BY_DOG;
+    } else if (scroller->isCollision(MILL, daisy)) {
+      daisyMode = MILL_CRASH;
+    } else if (scroller->isCollision(FENCE, daisy)) {
+      daisyFenceCnt = 200;
+      daisyMode = GOT_FENCE;
+    }
   }
 }
 
 void daisyWasShot() {
+  daisyMode = IN_PEACES;
   daisyInPeaces->onTick();
   daisyInPeaces->drawAllOnBackground(&background);
   if(daisyInPeaces->isReady() && (daisyInPeaces != NULL)) {
+    delete daisyInPeaces;
     Serial.println("Daisy in peaces ready, next mode FLYING...");
-    daisyMode = REBIRTH;
+    daisyDelay = millis() + 1000;
+    backToLife();
     daisy->setPos(Point(0xffff, 0));
-    scroller->setDaisyPos(daisy->getPos());
-    daisyDelay = millis() + 3000;
+    scroller->setDaisyPos(daisy->getPos(), daisyMode);
   }
 }
 
 void daisyNextTry() {
   if((globalCnt & 0x0f) == 0x0f) {
     if(millis() > daisyDelay) {
-      Serial.println("Rebirth of daisy");
-      daisyMode = FLYING;
+      Serial.println("daisyNextTry()");
       daisy->setPos(Point(25, 50));
       daisy->setStatus(NORMAL);
       daisyDx = 0;
       daisyDy = 0;
       inputController->processed();
+      daisyMode = PROTECTED;
+      daisyDelay = millis() + 1500;
     }
   }
+}
+
+void daisyAway() {
+  daisy->setStatus(VANISHED);
+  daisy->setPos(Point(0xffff, 0));
 }
 
 void mainGame() {
@@ -323,23 +330,44 @@ void mainGame() {
     daisy = new Daisy();
     daisyDx = 0;
     daisyDy = 0;
+    daisyDelay = millis() + 1500;
+    daisyMode = PROTECTED;
     inputController->getInput();
     inputController->processed();
     modeDone = mode;
   } else {
     clearBackground();
     scroller->onTick();
-    if(daisyMode == FLYING) {
+    if(daisyMode == FLYING || daisyMode == PROTECTED) {
       daisyFlying();
-    } else if(daisyMode == DAISY_IN_PEACES) {
+    } else if(daisyMode == HIT_BY_BULLET) {
+      daisyAway();
       daisyWasShot();
+    } else if(daisyMode == IN_PEACES) {
+      daisyWasShot();
+    } else if(daisyMode == MILL_CRASH) {
+      Serial.println("MILL_CRASH");
+      daisyAway();
+      backToLife();
+    } else if(daisyMode == ATE_BY_DOG) {
+      Serial.println("ATE_BY_DOG");
+      daisyAway();
+      backToLife();
+    } else if (daisyMode == GOT_FENCE) {
+      Serial.printf("fence protection for %d\n", daisyFenceCnt);
+      daisyMode = FLYING;
     } else if(daisyMode == REBIRTH) {
       daisyNextTry();
     }
+    if(daisyMode == PROTECTED && millis() > daisyDelay) daisyMode = FLYING;
     drawPlayfield();
     inputController->processed();
     inputController->poll();
     handleDaisy();
+    if(daisyFenceCnt > 0) daisyFenceCnt--; else if (daisyFenceCnt == 0) {
+      daisyFenceCnt--;
+      Serial.println("back to none-protected");
+    }
   }
 }
 

@@ -21,7 +21,7 @@ public:
   void onTick();
   void setDifficulty(uint8_t _difficulty);
   void setSpeed(uint8_t _speed);
-  void setDaisyPos(Point _p);
+  void setDaisyPos(Point _p, int _mode);
   void setEggPos(Point _p);
   bool isCollision(int type, AbstractSprite* sprite);
 
@@ -49,6 +49,7 @@ private:
   uint8_t speed = 1;
   Point daisyPos;
   Point eggPos;
+  int daisyMode;
   
 };
 

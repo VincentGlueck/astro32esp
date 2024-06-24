@@ -29,8 +29,9 @@ bool AbstractSprite::isCollided(AbstractSprite* other) {
   return false;
 }
 
-void AbstractSprite::setDaisyPos(Point _p) {
+void AbstractSprite::setDaisyPos(Point _p, int _mode) {
   daisyPos = Point(_p.x, _p.y);
+  daisyMode = _mode;
 }
 
 void AbstractSprite::setEggPos(Point _p) {
@@ -42,7 +43,7 @@ void AbstractSprite::setKeepInMemory(bool _keep) {
 }
 
 void AbstractSprite::setPos(Point _pos) {
-  pos = _pos;
+  pos = Point(_pos.x, _pos.y);
 }
 
 void AbstractSprite::setSubSprite(AbstractSprite* _sprite) {
@@ -80,6 +81,10 @@ void AbstractSprite::setAnimCnt(uint8_t _cnt) {
 
 void AbstractSprite::setUsrFlag0(bool _flag) {
   usr_flag0 = _flag;
+}
+
+void AbstractSprite::setUsrFlag1(bool _flag) {
+  usr_flag1 = _flag;
 }
 
 void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {

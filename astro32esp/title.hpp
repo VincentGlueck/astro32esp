@@ -28,10 +28,6 @@ public:
     tick = 30;
   }
 
-  int getClazz() {
-    return CLASS_DEFAULT;
-  }
-
   void setDaisyPos(Point _p) { }
   void setEggPos(Point _p) { }
 

@@ -20,17 +20,17 @@ public:
       y = 250-tp->y;
     }
     userInput = Nothing;
-    if(x > 140) {
+    if(x > 130) {
       userInput = Right;
-    } else if (x < 80) {
+    } else if (x < 70) {
       userInput = Left;
     }
-    if(y > 160) {
+    if(y > 150) {
       userInput |= Down;
-    } else if (y < 80) {
+    } else if (y < 100) {
       userInput |= Up;
     }
-    if(y > 90 && y < 150 && x > 100 && x < 130) userInput = Fire;
+    if(y > 110 && y < 140 && x > 80 && x < 120) userInput = Fire;
   }
 
   uint8_t getInput() {

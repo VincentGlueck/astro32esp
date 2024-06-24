@@ -7,11 +7,16 @@
 #define PLAYFIELD_WIDTH 310
 #define PLAYFIELD_HEIGHT 176
 
-enum ClazzType {
-  CLASS_DEFAULT,
-  CLASS_DAISY_AWARE,
-  CLASS_IS_DAISY,
-  CLASS_IS_EGG
+enum DaisyMode {
+  FLYING,
+  IN_PEACES,
+  PROTECTED,
+  REBIRTH,
+  HIT_BY_BULLET,
+  ATE_BY_DOG,
+  GOT_FENCE,
+  MILL_CRASH,
+  WOLF_CRASH
 };
 
 enum Status {
@@ -45,7 +50,7 @@ public:
   ~AbstractSprite();
 
   virtual void onTick() {};
-  void setDaisyPos(Point _p);
+  void setDaisyPos(Point _p, int _mode);
   void setEggPos(Point _p);
 
   Point getPos();
@@ -62,6 +67,7 @@ public:
   uint8_t getZPrio();
   void setZPrio(uint8_t _prio);
   void setUsrFlag0(bool _flag);
+  void setUsrFlag1(bool _flag);
   void setUsrDxDy(int dx, int dy=0, int ddx=0, int ddy=0);
   void setUsrAbc(int a, int b=0, int c=0);
   int getType();
@@ -89,6 +95,7 @@ protected:
   int usr_dx, usr_ddx, usr_dy, usr_ddy, usr_a, usr_b, usr_c;
   bool usr_flag0, usr_flag1;
   bool hit;
+  int daisyMode;
   AbstractSprite* subSprite = NULL;
 
 };
