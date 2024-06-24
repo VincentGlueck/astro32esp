@@ -412,8 +412,8 @@ public:
   void onTick() {
     tick++;
     if((tick & 3) == 3) {
-      if((daisyPos.x > pos.x) && (rnd(3) == 3)) pos.x--;
-      if((daisyPos.x < pos.x) && (rnd(3) == 3)) pos.x++;
+      if(((daisyPos.x-8) > pos.x) && (rnd(3) == 3)) pos.x--;
+      if(((daisyPos.x+8) < pos.x) && (rnd(3) == 3)) pos.x++;
       animCnt++;
       if(status == COLLIDED) {
         if(animCnt < 2) animCnt = 2;

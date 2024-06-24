@@ -244,7 +244,7 @@ void testSprite() {
 
 void drawEggs() {
   lcd.setTextColor(TFT_WHITE);
-  lcd.fillRect(172, 226, 24, 8, TFT_RED);
+  lcd.fillRect(172, 226, 16, 8, TFT_RED);
   lcd.drawString(String(eggs), 172, 226);
   oldEggs = eggs;
 }
@@ -313,7 +313,8 @@ void daisyFlying() {
       daisyFenceCnt = 200;
     } else if ((scroller->isCollision(CORN, daisy)) && (waitCorn <= 0)) {
       eggs++;
-      waitCorn = 12;  // TODO: this is hacky
+      if(eggs > 99) eggs = 99;
+      waitCorn = 18;  // TODO: this is hacky
     }
     waitCorn--;
     if(daisyWithFenceDelay > 0) {
