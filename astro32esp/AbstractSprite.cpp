@@ -1,6 +1,6 @@
 #include "AbstractSprite.h"
 
-//#define DEBUG_FRAME
+// #define DEBUG_FRAME
 
 AbstractSprite::AbstractSprite(int _type, uint8_t _animations, uint8_t _zPrio) {
   type = _type;

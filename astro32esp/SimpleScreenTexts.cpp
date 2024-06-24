@@ -22,8 +22,8 @@ void SimpleScreenTexts::smallText(String str, int color, int deltaY) {
   lcd.setFont(&fonts::DejaVu12);
   lcd.setTextDatum(textdatum_t::middle_center);
   lcd.setTextColor(color);
-  lcd.drawString(str, lcd.width() >> 1, (lcd.height() >> 1) + 32 + deltaY);
-  lcd.drawString(str, (lcd.width() >> 1) + 1, (lcd.height() >> 1) + 33 + deltaY);
+  lcd.drawString(str, lcd.width() >> 1, (lcd.height() >> 1) + 30 + deltaY);
+  lcd.drawString(str, (lcd.width() >> 1) + 1, (lcd.height() >> 1) + 31 + deltaY);
 }
 
 void SimpleScreenTexts::spriteBig(String str, LGFX_Sprite sprite, int color) {

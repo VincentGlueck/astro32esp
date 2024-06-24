@@ -11,6 +11,7 @@
 #define MIN_NEXT_MOUNTAIN 30
 #define MIN_NEXT_DOG 38
 #define MIN_NEXT_HUNTER 19
+#define MIN_NEXT_WOLF 48
 //#define MIN_NEXT_DECORATION 45
 
 class Scroller {
@@ -35,6 +36,7 @@ private:
   void createMountain(uint8_t idx);
   void createDog(uint8_t idx);
   void createHunter(uint8_t idx);
+  void createWolf(uint8_t idx);
   uint8_t getFreeSlot();
   bool isCollided(Point p0, Dimension d0, Point p1, Dimension d1);
   
@@ -46,6 +48,7 @@ private:
   uint8_t waitMountain = MIN_NEXT_MOUNTAIN;
   uint8_t waitDog = MIN_NEXT_DOG;
   uint8_t waitHunter = MIN_NEXT_HUNTER;
+  uint8_t waitWolf = MIN_NEXT_WOLF;
   uint8_t speed = 1;
   Point daisyPos;
   Point eggPos;

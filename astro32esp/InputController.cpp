@@ -19,6 +19,7 @@ public:
       x = 330-tp->x;
       y = 250-tp->y;
     }
+    Serial.printf("input x: %d, y: %d\n", x, y);
     userInput = Nothing;
     if(x > 130) {
       userInput = Right;

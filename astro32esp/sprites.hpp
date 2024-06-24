@@ -107,13 +107,13 @@ public:
     addSprite(SingleSprite(Dimension(32, 70), (short unsigned int*)millcrash04, Point(-1, -1)));
     addSprite(SingleSprite(Dimension(33, 70), (short unsigned int*)millcrash05, Point(0, -1)));
     pos.x = 305;
-    pos.y = 86;
+    pos.y = 84;
     usr_flag0 = false;
   }
 
   void onTick() {
     tick++;
-    if(status == NORMAL) {
+    if(status != VANISHED) {
       if(!usr_flag0 && (tick & 1) == 1) {
         animCnt++;
         if(animCnt > 2) animCnt = 0;
@@ -135,7 +135,7 @@ public:
 
 class Fence : public AbstractSprite {
 public:
-  Fence() : AbstractSprite(FENCE, 2) {
+  Fence() : AbstractSprite(FENCE, 2, 2) {
     addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence02));
     addSprite(SingleSprite(Dimension(41, 48), (short unsigned int*)fence01));
     pos.x = 305;
@@ -143,14 +143,15 @@ public:
   }
 
   void onTick() {
-    if(status == NORMAL) {
-      animCnt = COLLIDED ? 1 : 0;
+    if(status != VANISHED) {
+      animCnt = 1;
+      if((status == COLLIDED) && (daisyPos.x + 4) > pos.x) animCnt = 0;
       pos.x--;
-    }
-    if(pos.x < -52) {
-      status = VANISHED;
-      pos.x = 0xffff;
-    }
+      if(pos.x < -52) {
+        status = VANISHED;
+        pos.x = 0xffff;
+      }
+    } else Serial.println("Fence vanished");
   }
 };
 
@@ -158,12 +159,13 @@ class Corn : public AbstractSprite {
 public:
   Corn() : AbstractSprite(CORN, 2, 2) {
     addSprite(SingleSprite(Dimension(13, 28), (short unsigned int*)corn01));
-    addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02));
+    addSprite(SingleSprite(Dimension(13, 20), (short unsigned int*)corn02, Point(0, 5)));
     pos.y = 125;
   }
 
   void onTick() {
     pos.x--;
+    animCnt = (status == COLLIDED) ? 1 : 0;
     if(pos.x < -9) {
       status = VANISHED;
       pos.x = 0xffff;
@@ -175,7 +177,7 @@ class Mountain : public AbstractSprite {
 public:
   Mountain() : AbstractSprite(MOUNTAIN, 1, 2) {
     addSprite(SingleSprite(Dimension(71, 22), (short unsigned int*)mountain_raw));
-    pos.y = 128+rnd(1);
+    pos.y = 130+rnd(1);
     pos.x = 305;
   }  
 
@@ -193,11 +195,11 @@ public:
   Dog() : AbstractSprite(DOG, 9) {
     addSprite(SingleSprite(Dimension(27, 21), (short unsigned int*)dog01, Point(0, 5)));
     addSprite(SingleSprite(Dimension(28, 25), (short unsigned int*)dog02, Point(0, -4)));
-    addSprite(SingleSprite(Dimension(27, 29), (short unsigned int*)dog03, Point(0, -19)));
+    addSprite(SingleSprite(Dimension(27, 29), (short unsigned int*)dog03, Point(0, -21)));
     addSprite(SingleSprite(Dimension(28, 28), (short unsigned int*)dog04, Point(0, 2)));
 
-    addSprite(SingleSprite(Dimension(33, 29), (short unsigned int*)dog05, Point(0, -20))); // 4
-    addSprite(SingleSprite(Dimension(35, 21), (short unsigned int*)dog06, Point(0, -5)));
+    addSprite(SingleSprite(Dimension(33, 29), (short unsigned int*)dog05, Point(0, -12))); // 4 - got daisy
+    addSprite(SingleSprite(Dimension(35, 21), (short unsigned int*)dog06, Point(0, 5)));
 
     addSprite(SingleSprite(Dimension(32, 29), (short unsigned int*)dog07, Point(0, -4))); // 6
     addSprite(SingleSprite(Dimension(32, 24), (short unsigned int*)dog08, Point(0, 2)));
@@ -216,15 +218,15 @@ public:
       status = VANISHED;
       pos.x = 0xffff;
     }
-    if(usr_flag0 && ((tick & 0x7) == 0x7)) {
+    if(usr_flag0 && ((tick & 0xf) == 0xf)) {
       animCnt++;
       if(animCnt > 3) {
         animCnt = 0;
         usr_flag0 = false;
       }
-    } else if(usr_flag1 && ((tick & 0x7) == 0x7)) {
-      if(animCnt < 6) animCnt++;
-    } else if(!usr_flag0 && ((tick & 1) == 1) && (rnd(3) == 3)) {
+    } else if(usr_flag1 && ((tick & 0xf) == 0xf)) {
+      if(animCnt < 5) animCnt++;
+    } else if(!usr_flag0 && ((tick & 3) == 3) && (rnd(3) == 3)) {
       int dxDaisyX = pos.x - daisyPos.x;
       int dxDaisyY = 89-(abs(pos.y - daisyPos.y));
       if((abs(dxDaisyX) < 22)) {
@@ -315,9 +317,7 @@ public:
       status = VANISHED;
       pos.x = 0xffff;
     }
-    if(daisyMode != FLYING) {
-      animCnt = 0;
-    } else if (status == NORMAL) {
+    if (daisyMode == FLYING && status != VANISHED) {
       if(((tick & 7) == 7) && (daisyPos.x != 0xffff)) {
         int dxDaisy = pos.x - daisyPos.x;
         int dyDaisy = 89-(abs(pos.y - daisyPos.y));
@@ -405,25 +405,25 @@ public:
     usr_flag0 = false;
     usr_flag1 = false;
     pos.x = 310;
-    pos.y = 30 + rnd() >> 2;
+    pos.y = daisyPos.y - 16 + rnd() >> 3;
   }
 
   void onTick() {
     tick++;
-    if((tick & 0) == 0) {
+    if((tick & 3) == 3) {
       animCnt++;
       if(status == COLLIDED) {
-        if(animCnt >= animations) animCnt = 0;  
+        if(animCnt >= animations) animCnt = 2;  
       } else {
-        if(animCnt > 1) animCnt = 1;
+        if(animCnt > 1) animCnt = 0;
       }
     }
     pos.x-=2;
+    if((tick & 1) == 1) pos.x--;
     if(pos.x < -58) {
       status = VANISHED;
       pos.x = 0xffff;
     }
-
   }
 };
 

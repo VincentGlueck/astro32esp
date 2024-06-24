@@ -82,6 +82,12 @@ void Scroller::createHunter(uint8_t idx) {
   if(waitFence < 10) waitFence += 10;
 }
 
+void Scroller::createWolf(uint8_t idx) {
+  if((waitWolf > 0 || (daisyPos == 0xffff)) return;
+  sprites[idx] = new Wolf();
+  waitWolf = MIN_NEXT_WOLF + rnd(0xf);
+}
+
 void Scroller::addGroundObject() {
   int idx = getFreeSlot();
   if(idx == -1) {
@@ -93,7 +99,7 @@ void Scroller::addGroundObject() {
   switch(what) {
     case 0: createMill(idx); break;
     case 1: createHunter(idx); break;
-    case 3: break;
+    case 3: createWolf(idx); break;
     case 4: createFence(idx); break;
     case 5: createMountain(idx); waitTicks = 5; break;
     case 6: createCorn(idx); break;
@@ -134,6 +140,7 @@ void Scroller::onTick() {
     if(waitDog > 0) waitDog--;
     if(waitMountain > 0) waitMountain--;
     if(waitHunter > 0) waitHunter--;
+    if(waitWolf > 0) waitWolf--;
    }
 }
 
@@ -163,14 +170,14 @@ bool Scroller::isCollision(int type, AbstractSprite* sprite) {
          if(sprites[n]->getType() == MILL) {
           sprites[n]->setUsrFlag0(true);
           sprites[n]->setAnimCnt(3);
-        } else if(sprites[n]->getType() == FENCE) {
-          sprites[n]->setAnimCnt(1);
+        } else if((sprites[n]->getType() == CORN) && (sprites[n]->getStatus() != COLLIDED)) {
+          sprites[n]->setStatus(COLLIDED);
+        } else if((sprites[n]->getType() == FENCE) && (sprites[n]->getStatus() != COLLIDED)) {
+          sprites[n]->setStatus(COLLIDED);
         } else if(sprites[n]->getType() == DOG) {
           sprites[n]->setAnimCnt(4);
           sprites[n]->setUsrFlag0(false);
           sprites[n]->setUsrFlag1(true);
-        } else {
-          sprites[n] = NULL; // remove, main prog takes over
         }
         return true;
       };

@@ -21,7 +21,7 @@ enum DaisyMode {
 
 enum Status {
   NORMAL,
-  READY,
+  INVISIBLE,
   COLLIDED,
   VANISHED
 };
