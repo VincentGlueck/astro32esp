@@ -363,7 +363,7 @@ void daisyFlying() {
       if(daisyWithFenceDelay == 0) daisy->setUsrFlag0(true);
     }
   } else {
-    daisyDx = ;
+    daisyDx = 0;
     daisyDy = 0;
   }
 }
@@ -498,7 +498,6 @@ void mainGame() {
     for(int n=0; n<MAX_EGGS; n++) {
       if(eggSprite[n] != NULL) {
         if(eggSprite[n]->getStatus() == VANISHED) {
-          delete eggSprite[n];
           eggSprite[n] = NULL;
         } else {
           bool eggHit = false;
@@ -506,7 +505,6 @@ void mainGame() {
           eggHit |= checkEggHit(DOG, n, 6);
           eggHit |= checkEggHit(HUNTER, n, 6);
           if(eggHit) {
-            delete eggSprite[n];
             eggSprite[n] = NULL;
           }
         }
