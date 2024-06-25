@@ -24,7 +24,8 @@ public:
   void setSpeed(uint8_t _speed);
   void setDaisyPos(Point _p, int _mode);
   void setEggPos(Point _p);
-  bool isCollision(int type, AbstractSprite* sprite);
+  int getCollisionIdx(int type, AbstractSprite* sprite);
+  AbstractSprite* getAbstractSprite(int n);
 
 private:
   LGFX_Sprite background; 

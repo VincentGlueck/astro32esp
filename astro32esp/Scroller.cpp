@@ -163,7 +163,11 @@ bool Scroller::isCollided(Point p0, Dimension d0, Point p1, Dimension d1) {
   return true;
 }
 
-bool Scroller::isCollision(int type, AbstractSprite* sprite) {
+AbstractSprite* Scroller::getAbstractSprite(int n) {
+  return sprites[n];
+}
+
+int Scroller::getCollisionIdx(int type, AbstractSprite* sprite) {
   for(int n=0; n<MAX_GROUND_SPRITES; n++) {
     if(sprites[n] != NULL) {
       if(sprites[n]->getType() == type && isCollided(sprite->getPos(), sprite->getDimension(sprite->getAnimCnt()), sprites[n]->getPos(), sprites[n]->getDimension(sprites[n]->getAnimCnt()))) {
@@ -181,9 +185,9 @@ bool Scroller::isCollision(int type, AbstractSprite* sprite) {
         } else if((sprites[n]->getType() == WOLF) && (sprites[n]->getStatus() != COLLIDED)) {
           sprites[n]->setStatus(COLLIDED);
         }
-        return true;
+        return n;
       };
     }
   }
-  return false;
+  return -1;
 }

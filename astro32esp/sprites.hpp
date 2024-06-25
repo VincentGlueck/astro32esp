@@ -133,6 +133,59 @@ public:
   }
 };
 
+class Egg : public AbstractSprite {
+public:
+  Egg() : AbstractSprite(EGG, 11) {
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg01));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg02));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg03, Point(1,0)));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg04, Point(1,0)));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg05));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg06));
+    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg07, Point(1,0)));
+
+    addSprite(SingleSprite(Dimension(13, 8), (short unsigned int*)eggdamaged01));
+    addSprite(SingleSprite(Dimension(14, 8), (short unsigned int*)eggdamaged02, Point(-1,0)));
+    addSprite(SingleSprite(Dimension(14, 7), (short unsigned int*)eggdamaged03, Point(-1,1)));
+    addSprite(SingleSprite(Dimension(14, 5), (short unsigned int*)eggdamaged04, Point(-1,2)));
+    usr_ddy = 12;
+    usr_ddx = rnd(0xf) + 35;
+    usr_dx = 4096+1024;
+    usr_dy = 38;
+  }
+
+  void onTick() {
+    tick++;
+    if(status == NORMAL) {
+      if((pos.y > 143) && (animCnt < 7)) {
+        pos.y = 143;
+        animCnt = 7;
+        status = COLLIDED; // means: on ground
+      }
+      if(animCnt >= 7) {
+        pos.x--;
+        if(pos.x < -12) {
+          status = VANISHED;
+          pos.x = 0xffff;
+        }
+        if(animCnt < (animations-1)) animCnt++;
+      } else {
+        //Serial.printf("pos.x: %d, pos.y: %d, ddx: %d, ddy: %d\n", pos.x, pos.y, usr_ddx, usr_ddy);
+        animCnt++;
+        if(usr_ddx > 128) usr_ddx -= 4;
+        if((tick & 1) == 1) if(usr_ddy < 512) usr_ddy += 64;
+        usr_dx += usr_ddx;
+        usr_dy += usr_ddy;
+        pos.x += (usr_dx >> 11);
+        pos.y += (usr_dy >> 11);
+        if(animCnt > 6) animCnt = 0;
+      }
+    } else {
+      pos.x--;
+    }     
+  }
+};
+
 class Fence : public AbstractSprite {
 public:
   Fence() : AbstractSprite(FENCE, 2, 2) {
@@ -218,7 +271,7 @@ public:
       status = VANISHED;
       pos.x = 0xffff;
     }
-    if(usr_flag0 && ((tick & 0xf) == 0xf)) {
+    if(usr_flag0 && !usr_flag1 && ((tick & 0xf) == 0xf)) {
       animCnt++;
       if(animCnt > 3) {
         animCnt = 0;
@@ -293,7 +346,7 @@ public:
 
 class Hunter : public AbstractSprite {
 private:
-  Bullet* bullet;  
+  Bullet* bullet = NULL;  
 public:
   Hunter() : AbstractSprite(HUNTER, 9) {
     addSprite(SingleSprite(Dimension(28, 31), (short unsigned int*)man01, Point(-3, 0)));
@@ -317,36 +370,42 @@ public:
       status = VANISHED;
       pos.x = 0xffff;
     }
-    if (daisyMode == FLYING && status != VANISHED) {
-      if(((tick & 7) == 7) && (daisyPos.x != 0xffff)) {
-        int dxDaisy = pos.x - daisyPos.x;
-        int dyDaisy = 89-(abs(pos.y - daisyPos.y));
-        if(dxDaisy < 0) {
-          if(dxDaisy < -(180+dyDaisy)) animCnt = 5; else if(dxDaisy > -(70+dyDaisy)) animCnt = 3; else animCnt = 4;
-        } else {
-          if(dxDaisy > 160-dyDaisy) animCnt = 0; else if (dxDaisy > 70-dyDaisy) animCnt = 1; else animCnt = 2;
-        }
+    if(status == COLLIDED) {
+      if((tick & 7) == 7) {
+        if(animCnt < (animations-1)) animCnt++;
       }
-#ifdef HUNTER_SHOOTS
-      if((usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
-        if(rnd(0x0f) == 0x0f) {
-          Point p;
-          if(animCnt == 0) p = Point(pos.x-12, pos.y-16);
-            else if (animCnt == 1) p = Point(pos.x-4, pos.y-24);
-              else if(animCnt == 4) p = Point(pos.x+8, pos.y-16);
-                else if(animCnt == 5) p = Point(pos.x+16, pos.y-8);
-                  else p = Point(pos.x+4, pos.y-16);
-          bullet = new Bullet();
-          int dx = daisyPos.x - pos.x - rnd(0xf) + rnd(0x7);
-          int dy = daisyPos.y - pos.y - rnd(0xf) + rnd(0x7);
-          usr_a = 50;
-          bullet->setPos(p);
-          bullet->setUsrDxDy(0, 0, dx, dy);
-          setSubSprite(bullet);
+    } else {
+      if (daisyMode == FLYING && status != VANISHED) {
+        if(((tick & 7) == 7) && (daisyPos.x != 0xffff)) {
+          int dxDaisy = pos.x - daisyPos.x;
+          int dyDaisy = 89-(abs(pos.y - daisyPos.y));
+          if(dxDaisy < 0) {
+            if(dxDaisy < -(180+dyDaisy)) animCnt = 5; else if(dxDaisy > -(70+dyDaisy)) animCnt = 3; else animCnt = 4;
+          } else {
+            if(dxDaisy > 160-dyDaisy) animCnt = 0; else if (dxDaisy > 70-dyDaisy) animCnt = 1; else animCnt = 2;
+          }
         }
+  #ifdef HUNTER_SHOOTS
+        if((usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
+          if(rnd(0x0f) == 0x0f) {
+            Point p;
+            if(animCnt == 0) p = Point(pos.x-12, pos.y-16);
+              else if (animCnt == 1) p = Point(pos.x-4, pos.y-24);
+                else if(animCnt == 4) p = Point(pos.x+8, pos.y-16);
+                  else if(animCnt == 5) p = Point(pos.x+16, pos.y-8);
+                    else p = Point(pos.x+4, pos.y-16);
+            bullet = new Bullet();
+            int dx = daisyPos.x - pos.x - rnd(0xf) + rnd(0x7);
+            int dy = daisyPos.y - pos.y - rnd(0xf) + rnd(0x7);
+            usr_a = 50;
+            bullet->setPos(p);
+            bullet->setUsrDxDy(0, 0, dx, dy);
+            setSubSprite(bullet);
+          }
+        }
+  #endif      
+        usr_a--;
       }
-#endif      
-      usr_a--;
     }
   }
 };
@@ -364,32 +423,6 @@ public:
     if(pos.x < -3) {
       status = VANISHED;
       pos.x = 0xffff;
-    }
-  }
-};
-
-class Egg : public AbstractSprite {
-public:
-  Egg() : AbstractSprite(EGG, 11) {
-    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg01));
-    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg02));
-    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg03, Point(1,0)));
-    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg04, Point(1,0)));
-    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg05));
-    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg06));
-    addSprite(SingleSprite(Dimension(9, 9), (short unsigned int*)egg07, Point(1,0)));
-
-    addSprite(SingleSprite(Dimension(13, 8), (short unsigned int*)eggdamaged01));
-    addSprite(SingleSprite(Dimension(14, 8), (short unsigned int*)eggdamaged02, Point(-1,0)));
-    addSprite(SingleSprite(Dimension(14, 7), (short unsigned int*)eggdamaged03, Point(-1,1)));
-    addSprite(SingleSprite(Dimension(14, 5), (short unsigned int*)eggdamaged04, Point(-1,2)));
-  }
-
-  void onTick() {
-    tick++;
-    if((tick & 0) == 0) {
-      animCnt++;
-      if(animCnt >= animations) animCnt = 0;
     }
   }
 };

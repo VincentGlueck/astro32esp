@@ -14,6 +14,7 @@ SimpleScreenTexts* screenTexts;
 
 #define EXTRA_BOTTOM 28
 #define MIN_NEXT_DIRECTION_MS 400;
+#define MAX_EGGS 4
 
 const long TOUCH_REPEAT = 80;            // how often (ms) is (long)touch possible
 const int SCREEN_LEFT = 5;
@@ -45,9 +46,11 @@ BigDaisy* bigDaisy = NULL;
 Daisy* daisy;
 DaisyInPeaces *daisyInPeaces;
 Scroller* scroller;
+Egg* eggSprite[MAX_EGGS];
 GetReady* getReady;
 Point lastDaisyPos;
 long daisyDelay;
+long eggDelay;
 
 uint16_t score;
 uint8_t miscMode;
@@ -199,6 +202,7 @@ void setup() {
   screenTexts = new SimpleScreenTexts(lcd);
   inputController = new InputController(lcd);
   scroller = new Scroller(background);
+  for(int n=0; n<MAX_EGGS; n++) eggSprite[n] = NULL;
   scroller->setSpeed(1); // TWO to make things weirder
   lastMillis = millis();
 }
@@ -244,9 +248,21 @@ void testSprite() {
 
 void drawEggs() {
   lcd.setTextColor(TFT_WHITE);
-  lcd.fillRect(172, 226, 16, 8, TFT_RED);
+  lcd.fillRect(172, 226, 16, 8, TFT_BLACK);
   lcd.drawString(String(eggs), 172, 226);
   oldEggs = eggs;
+}
+
+uint8_t getFreeEggSlot() {
+  int n=0;
+  while(n < MAX_EGGS) {
+    if(eggSprite[n] == NULL) {
+      return n;
+    }
+    n++;
+  }
+  Serial.println("No more eggs possible!");
+  return -1;
 }
 
 void handleDaisy() {
@@ -279,19 +295,29 @@ void handleDaisy() {
   int y = daisy->getPos().y;
   x += daisyDx;
   y += daisyDy;
-  if(isGlobal(0)) {
-    if(x < 10) x = 10; else if (x > 170) x = 170;
-    if(y < 5) y = 5; else if (y > 107) y = 107;
-    daisy->setPos(Point(x, y));
-  }
-  if((input & Fire) == Fire) Serial.println("Fire...");
+  
+  if(x < 10) x = 10; else if (x > 170) x = 170;
+  if(y < 5) y = 5; else if (y > 107) y = 107;
+  daisy->setPos(Point(x, y));
   scroller->setDaisyPos(daisy->getPos(), daisyMode);
+  
+  if((input == Fire) && (eggs > 0) && (millis() > eggDelay)) {
+    eggs--;
+    eggDelay = millis() + 1500;
+    int idx = getFreeEggSlot();
+    if(idx != -1) {
+      Egg* egg = new Egg();
+      egg->setPos(Point(daisy->getPos().x + 20, daisy->getPos().y + 16));
+      eggSprite[idx] = egg;
+    } else Serial.println("No more free slots for eggs...");
+  }
 }
 
 void backToLife() {
   daisyMode = REBIRTH;
   daisyDelay = millis() + 1500;
   daisy->setPos(Point(lastDaisyPos.x, lastDaisyPos.y));
+  if(eggs < 2) eggs = 2;
 }
 
 void daisyFlying() {
@@ -299,19 +325,17 @@ void daisyFlying() {
   if(daisy->getStatus() == NORMAL) daisy->drawOnSprite(&background);
   daisy->onTick();
   if(daisy->getStatus() != VANISHED) {
-    if(scroller->isCollision(BULLET, daisy)) {
+    if(scroller->getCollisionIdx(BULLET, daisy) >= 0) {
       daisyMode = HIT_BY_BULLET;
       daisyInPeaces = new DaisyInPeaces(daisy->getPos().x, daisy->getPos().y);
     }
-    if (scroller->isCollision(DOG, daisy)) daisyMode = ATE_BY_DOG;
-    if (scroller->isCollision(MILL, daisy)) daisyMode = MILL_CRASH;
-    if (scroller->isCollision(WOLF, daisy)) {
-      daisyMode = WOLF_CRASH;
-    }
-    if (scroller->isCollision(FENCE, daisy)) {
+    if (scroller->getCollisionIdx(DOG, daisy) >= 0) daisyMode = ATE_BY_DOG;
+    if (scroller->getCollisionIdx(MILL, daisy) >= 0) daisyMode = MILL_CRASH;
+    if (scroller->getCollisionIdx(WOLF, daisy) >= 0) daisyMode = WOLF_CRASH;
+    if (scroller->getCollisionIdx(FENCE, daisy) >= 0) {
       daisyWithFenceDelay = 4;
       daisyFenceCnt = 200;
-    } else if ((scroller->isCollision(CORN, daisy)) && (waitCorn <= 0)) {
+    } else if ((scroller->getCollisionIdx(CORN, daisy) >= 0) && (waitCorn <= 0)) {
       eggs++;
       if(eggs > 99) eggs = 99;
       waitCorn = 18;  // TODO: this is hacky
@@ -368,6 +392,7 @@ void mainGame() {
     oldEggs = -1;
     waitCorn = 0;
     daisyDelay = millis() + 1500;
+    eggDelay = daisyDelay;
     daisyMode = FLYING;
     inputController->getInput();
     inputController->processed();
@@ -391,7 +416,7 @@ void mainGame() {
       backToLife();
     } else if (daisyMode == WOLF_CRASH) {
       daisyAway();
-      backToLife();07;
+      backToLife();
     } else if (daisyMode == GOT_FENCE) {
       daisy->setAnimCnt(daisy->getAnimCnt() + 3);
       daisyMode = FLYING;
@@ -405,21 +430,41 @@ void mainGame() {
       daisy->setStatus(NORMAL);
       daisyMode = FLYING;
     }
+    for(int n=0; n<MAX_EGGS; n++) if (eggSprite[n] != NULL) eggSprite[n]->drawOnSprite(&background);
+    drawEggs();
     drawPlayfield();
-    if(eggs != oldEggs) {
-      drawEggs();
-    }
     inputController->processed();
     inputController->poll();
     handleDaisy();
     if(daisy->getPos().x != 0xffff) {
       lastDaisyPos = Point(daisy->getPos().x, daisy->getPos().y);
-      // Serial.printf("last set to %d, %d\n", lastDaisyPos.x, lastDaisyPos.y);
     }
     if(daisyFenceCnt > 0) daisyFenceCnt--; else if (daisyFenceCnt == 0) {
       daisyFenceCnt--;
       daisy->setUsrFlag0(false);
       daisy->setAnimCnt(daisy->getAnimCnt()-3);
+    }
+    for(int n=0; n<MAX_EGGS; n++) {
+      if(eggSprite[n] != NULL) {
+        if(eggSprite[n]->getStatus() == VANISHED) {
+          delete eggSprite[n];
+          eggSprite[n] = NULL;
+        } else {
+          eggSprite[n]->onTick();
+            if(eggSprite[n]->getStatus() != COLLIDED) {
+            int idx = scroller->getCollisionIdx(DOG, eggSprite[n]);
+            if(idx >= 0) {
+              Serial.println("Hit a dog");
+            }
+            idx = scroller->getCollisionIdx(HUNTER, eggSprite[n]);
+            if((idx >= 0) && (scroller->getAbstractSprite(idx)->getStatus() != COLLIDED)) {
+              Serial.println("Hit a hunter");
+              scroller->getAbstractSprite(idx)->setStatus(COLLIDED);
+              scroller->getAbstractSprite(idx)->setAnimCnt(6);
+            }
+          }
+        }
+      }
     }
   }
 }
