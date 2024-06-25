@@ -445,8 +445,7 @@ public:
     usr_flag0 = false;
     usr_flag1 = false;
     pos.x = 310;
-    pos.y = 40+rnd(0x3f);
-    if(daisyPos.x != 0xffff) pos.y = daisyPos.y - 16 + (rnd() >> 5);
+    if(daisyPos.x != 0xffff) pos.y = daisyPos.y + (rnd() >> 4); else pos.y = 40+rnd(0x1f);
   }
 
   void onTick() {

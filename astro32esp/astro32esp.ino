@@ -283,7 +283,10 @@ void handleDaisy() {
   }
   if((input & Left) == Left) {
     if((millis() >= nextPossibleHorz) || (daisyDx != 0)) {
-      if(daisyDx > -2) daisyDx--;
+      if(daisyDx > -2) {
+        daisyDx--;
+        if(isGlobal(1)) daisyDx--;
+      }
       nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
@@ -360,7 +363,7 @@ void daisyFlying() {
       if(daisyWithFenceDelay == 0) daisy->setUsrFlag0(true);
     }
   } else {
-    daisyDx = 0;
+    daisyDx = ;
     daisyDy = 0;
   }
 }
