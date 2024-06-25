@@ -21,7 +21,8 @@ enum SpriteTypes {
   GRAS,
   EGG,
   WOLF,
-  DAISY_IN_PEACES
+  DAISY_IN_PEACES,
+  LIFE
 };
 
 class BigDaisy : public AbstractSprite {
@@ -254,7 +255,7 @@ public:
     addSprite(SingleSprite(Dimension(33, 29), (short unsigned int*)dog05, Point(0, -12))); // 4 - got daisy
     addSprite(SingleSprite(Dimension(35, 21), (short unsigned int*)dog06, Point(0, 5)));
 
-    addSprite(SingleSprite(Dimension(32, 29), (short unsigned int*)dog07, Point(0, -4))); // 6
+    addSprite(SingleSprite(Dimension(32, 29), (short unsigned int*)dog07, Point(0, -4))); // 6 - hit by egg
     addSprite(SingleSprite(Dimension(32, 24), (short unsigned int*)dog08, Point(0, 2)));
     addSprite(SingleSprite(Dimension(33, 26), (short unsigned int*)dog09, Point(0, 5)));
     pos.y = 124;
@@ -271,21 +272,27 @@ public:
       status = VANISHED;
       pos.x = 0xffff;
     }
-    if(usr_flag0 && !usr_flag1 && ((tick & 0xf) == 0xf)) {
-      animCnt++;
-      if(animCnt > 3) {
-        animCnt = 0;
-        usr_flag0 = false;
+    if(status == COLLIDED) {
+      if((tick & 7) == 7) {
+        if(animCnt < (animations-1)) animCnt++;
       }
-    } else if(usr_flag1 && ((tick & 0xf) == 0xf)) {
-      if(animCnt < 5) animCnt++;
-    } else if(!usr_flag0 && ((tick & 3) == 3) && (rnd(3) == 3)) {
-      int dxDaisyX = pos.x - daisyPos.x;
-      int dxDaisyY = 89-(abs(pos.y - daisyPos.y));
-      if((abs(dxDaisyX) < 22)) {
-        if(dxDaisyY > 50) {
-          usr_flag0 = true;
-          animCnt = 1;
+    } else {
+      if(usr_flag0 && !usr_flag1 && ((tick & 0xf) == 0xf)) {
+        animCnt++;
+        if(animCnt > 3) {
+          animCnt = 0;
+          usr_flag0 = false;
+        }
+      } else if(usr_flag1 && ((tick & 0xf) == 0xf)) {
+        if(animCnt < 5) animCnt++;
+      } else if(!usr_flag0 && ((tick & 3) == 3) && (rnd(3) == 3)) {
+        int dxDaisyX = pos.x - daisyPos.x;
+        int dxDaisyY = 89-(abs(pos.y - daisyPos.y));
+        if((abs(dxDaisyX) < 22)) {
+          if(dxDaisyY > 50) {
+            usr_flag0 = true;
+            animCnt = 1;
+          }
         }
       }
     }
@@ -413,7 +420,7 @@ public:
 class Gras : public AbstractSprite {
 public:
   Gras() : AbstractSprite(GRAS, 1) {
-    addSprite(SingleSprite(Dimension(7, 11), (short unsigned int*)gras));
+    addSprite(SingleSprite(Dimension(7, 11), (short unsigned int*)gras_raw));
     pos.x = 310;
     pos.y = 123;
   }
@@ -462,6 +469,16 @@ public:
       pos.x = 0xffff;
     }
   }
+};
+
+class Life : public AbstractSprite {
+public:
+  Life() : AbstractSprite(LIFE, 1) {
+    addSprite(SingleSprite(Dimension(7, 11), (short unsigned int*)life_raw));
+    keepInMemory = true;
+  }
+
+  void onTick() {}
 };
 
 class DaisyInPeaces : public AbstractSprite {

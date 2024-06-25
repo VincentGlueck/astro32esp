@@ -87,6 +87,17 @@ void AbstractSprite::setUsrFlag1(bool _flag) {
   usr_flag1 = _flag;
 }
 
+void AbstractSprite::drawOnLcd(LGFX* lcd) {
+  if(lgfxSprite.createSprite(sprites[animCnt].dimension.width, sprites[animCnt].dimension.height)) {
+    if(!keepInMemory || !loaded) {
+      lgfxSprite.setSwapBytes(true);
+      lgfxSprite.pushImage(0, 0, sprites[animCnt].dimension.width, sprites[animCnt].dimension.height, &sprites[animCnt].ptr[0]);
+    }
+    lgfxSprite.pushSprite(lcd, pos.x, pos.y, 0x0000);
+    if(!keepInMemory) lgfxSprite.deleteSprite();
+  }
+}
+
 void AbstractSprite::drawOnSprite(LGFX_Sprite* background) {
   bool outOfMemory = false;
   if(loadedAnims < animations) {

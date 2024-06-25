@@ -16,8 +16,8 @@ public:
       x = tp->x;
       y = tp->y;
     } else {
-      x = 330-tp->x;
-      y = 250-tp->y;
+      x = 330-abs(tp->x);
+      y = 250-abs(tp->y);
     }
     //Serial.printf("input x: %d, y: %d\n", x, y);
     userInput = Nothing;
@@ -29,10 +29,10 @@ public:
       userInput = Left;
       moving = true;
     }
-    if(y > 180) {
+    if(y > 160) {
       userInput |= Down;
       moving = true;
-    } else if (y < 60) {
+    } else if (y < 100) {
       userInput |= Up;
       moving = true;
     }

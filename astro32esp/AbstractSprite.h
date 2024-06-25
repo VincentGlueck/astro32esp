@@ -57,6 +57,7 @@ public:
   void setPos(Point _pos);
   Dimension getDimension(uint8_t whichAnim);
   void drawOnSprite(LGFX_Sprite* background);
+  void drawOnLcd(LGFX* lcd);
   void addSprite(SingleSprite _sprite);
   bool isLoaded();
   void setKeepInMemory(bool _keep);
