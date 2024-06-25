@@ -246,9 +246,9 @@ void testSprite() {
 void drawLifes() {
   if(oldDaisyLifes == daisyLifes) return;
   oldDaisyLifes = daisyLifes;
-  lcd.fillRect(18, 223, 34, 12, TFT_BLACK);
+  lcd.fillRect(18, 224, 34, 12, TFT_BLACK);
   for(int n=0; n<daisyLifes; n++) {
-    life->setPos(Point(18+(n*13), 223));
+    life->setPos(Point(18+(n*13), 224));
     life->drawOnLcd(&lcd);
   }
 }
@@ -433,7 +433,7 @@ void mainGame() {
     clearBackground();
     scroller->onTick();
     drawEggs();
-    screenTexts->spriteBig("Game over", &background, TFT_DARKGRAY);
+    if((globalCnt & 0xf) > 6) screenTexts->spriteBig("Game over", background, TFT_DARKGRAY);
     drawPlayfield();
     if(millis() > daisyDelay) {
       inputController->processed();
