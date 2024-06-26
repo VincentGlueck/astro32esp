@@ -8,6 +8,17 @@ Scroller::Scroller(LGFX_Sprite _background) {
 }
 
 Scroller::~Scroller() {
+  for(int n=0; n<MAX_GROUND_SPRITES; n++) {
+    if(sprites[n] != NULL) {
+      sprites[n]->setKeepInMemory(false);
+      if(sprites[n]->getSubSprite() != NULL) {
+        sprites[n]->getSubSprite()->setKeepInMemory(false);
+        delete sprites[n]->getSubSprite();
+      }
+      delete sprites[n];
+    }
+  }
+  delete sprites;
 }
 
 void Scroller::setDifficulty(uint8_t _difficulty) {
@@ -32,7 +43,7 @@ uint8_t Scroller::getFreeSlot() {
 
 void Scroller::createMill(uint8_t idx) {
   if(waitMill > 0) return;
-  waitMill = MIN_NEXT_MILL + rnd(0xf);
+  waitMill = MIN_NEXT_MILL + rnd_diff(0xf, (1-(difficulty>>1)));
   sprites[idx] = new Mill();
   if(waitFence < 30) waitFence += 30;
   if(waitDog < 15) waitDog += 15;
@@ -45,7 +56,7 @@ void Scroller::createFence(uint8_t idx) {
   sprites[idx] = new Fence();
   if(waitMill < 20) waitMill += 20;
   if(waitDog < 15) waitDog += 15;
-  waitFence = MIN_NEXT_FENCE + rnd(0xf);
+  waitFence = MIN_NEXT_FENCE + rnd_diff(0xf, difficulty);
 }
 
 void Scroller::createCorn(uint8_t idx) {
@@ -59,7 +70,7 @@ void Scroller::createCorn(uint8_t idx) {
     idx = getFreeSlot();
     if(idx == -1) break;
   }
-  waitCorn = MIN_NEXT_CORN + rnd(0xf);
+  waitCorn = MIN_NEXT_CORN + rnd_diff(0xf, difficulty);
 }
 
 void Scroller::createMountain(uint8_t idx) {
@@ -71,13 +82,14 @@ void Scroller::createMountain(uint8_t idx) {
 void Scroller::createDog(uint8_t idx) {
   if(waitDog > 0) return;
   sprites[idx] = new Dog();
-  waitDog = MIN_NEXT_DOG + rnd(0xf);
+  waitDog = MIN_NEXT_DOG + rnd_diff(0xf, difficulty);
 }
 
 void Scroller::createHunter(uint8_t idx) {
   if(waitHunter > 0) return;
   sprites[idx] = new Hunter();
-  waitHunter = MIN_NEXT_HUNTER + rnd(0xf);
+  sprites[idx]->setUsrAbc(0, 0, difficulty);
+  waitHunter = MIN_NEXT_HUNTER + rnd_diff(0xf, difficulty);
   if(waitMill < 15) waitMill += 15;
   if(waitFence < 10) waitFence += 10;
 }
@@ -85,7 +97,7 @@ void Scroller::createHunter(uint8_t idx) {
 void Scroller::createWolf(uint8_t idx) {
   if((waitWolf > 0) || (daisyPos.x == 0xffff)) return;
   sprites[idx] = new Wolf();
-  waitWolf = MIN_NEXT_WOLF + rnd(0xf);
+  waitWolf = MIN_NEXT_WOLF + rnd_diff(0xf, difficulty);
 }
 
 void Scroller::addGroundObject() {
@@ -94,7 +106,6 @@ void Scroller::addGroundObject() {
     Serial.println("No free slot!");
     return;
   }
-  waitTicks = MIN_NEXT_TICKS;
   int what = rnd(7);
   switch(what) {
     case 0: createMill(idx); break;
@@ -131,7 +142,7 @@ void Scroller::onTick() {
       }
     }
   }
-  if((waitTicks <= 0) && ((rnd(1) == 1) || (difficulty > 2))) {
+  if((waitTicks <= 0) && ((rnd(1) == 1) || (difficulty >= 2))) {
     addGroundObject();
     if(waitMill > 0) waitMill--;
     if((waitMill > 0) && (difficulty > 1)) waitMill--;
@@ -141,6 +152,7 @@ void Scroller::onTick() {
     if(waitMountain > 0) waitMountain--;
     if(waitHunter > 0) waitHunter--;
     if(waitWolf > 0) waitWolf--;
+    waitTicks = MIN_NEXT_TICKS;
    }
 }
 

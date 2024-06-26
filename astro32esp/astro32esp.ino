@@ -16,6 +16,7 @@ SimpleScreenTexts* screenTexts;
 #define MIN_NEXT_DIRECTION_MS 400
 #define MAX_EGGS 4
 #define SCORE_FOR_SURVINING 200
+#define SHOW_BTN_TIME 20
 
 enum GameModes {
   HELLO,
@@ -204,6 +205,7 @@ void setup() {
   mode = HELLO;
 }
 
+/*
 void testSprite() {
   bool flag = false;
   AbstractSprite* sprite = new Corn();
@@ -242,6 +244,7 @@ void testSprite() {
     inputController->processed();
   }
 }
+*/
 
 void drawLifes() {
   if(oldDaisyLifes == daisyLifes) return;
@@ -275,18 +278,17 @@ uint8_t getFreeEggSlot() {
 
 void handleDaisy() {
   uint8_t input = inputController->getInput();
-  if((input & Right) != 0) {
-    if((millis() >= nextPossibleHorz) || (daisyDx != 0)) {
+  if((input & Right) == Right) {
+    if(millis() >= nextPossibleHorz) {
       if(daisyDx < 1) daisyDx++;
+      Serial.printf("daisyDx: %d\n", daisyDx);
       nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
   if((input & Left) == Left) {
-    if((millis() >= nextPossibleHorz) || (daisyDx != 0)) {
-      if(daisyDx > -2) {
-        daisyDx--;
-        if(isGlobal(1)) daisyDx--;
-      }
+    if(millis() >= nextPossibleHorz) {
+      if(daisyDx > -2) daisyDx--;
+      Serial.printf("daisyDx: %d\n", daisyDx);
       nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
@@ -306,7 +308,6 @@ void handleDaisy() {
   int y = daisy->getPos().y;
   x += daisyDx;
   y += daisyDy;
-  
   if(x < 10) x = 10; else if (x > 170) x = 170;
   if(y < 5) y = 5; else if (y > 107) y = 107;
   daisy->setPos(Point(x, y));
@@ -320,7 +321,7 @@ void handleDaisy() {
       Egg* egg = new Egg();
       egg->setPos(Point(daisy->getPos().x + 20, daisy->getPos().y + 16));
       eggSprite[idx] = egg;
-    } else Serial.println("No more free slots for eggs...");
+    }
   }
 }
 
@@ -481,12 +482,12 @@ void mainGame() {
       daisyMode = FLYING;
     }
     for(int n=0; n<MAX_EGGS; n++) if (eggSprite[n] != NULL) eggSprite[n]->drawOnSprite(&background);
-    drawEggs();
+    handleDaisy();
     drawPlayfield();
+    drawEggs();
     drawLifes();
     inputController->processed();
     inputController->poll();
-    handleDaisy();
     if(daisyMode == FLYING) {
       lastDaisyPos = Point(daisy->getPos().x, daisy->getPos().y);
     }

@@ -9,9 +9,9 @@
 
 enum UserInput { Nothing = 0,
                  Up = 1,
-                 Left = 4,
-                 Right = 8,
-                 Down = 2,
+                 Left = 2,
+                 Right = 4,
+                 Down = 8,
                  Fire = 16
 };
 

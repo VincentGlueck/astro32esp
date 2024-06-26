@@ -19,24 +19,24 @@ public:
       x = 330-abs(tp->x);
       y = 250-abs(tp->y);
     }
-    //Serial.printf("input x: %d, y: %d\n", x, y);
+    Serial.printf("input x: %d, y: %d\n", x, y);
     userInput = Nothing;
-    bool moving = false;
-    if(x > 180) {
+    if(x > 120) {
       userInput = Right;
-      moving = true;
-    } else if (x < 50) {
+    } else if (x < 80) {
       userInput = Left;
-      moving = true;
     }
-    if(y > 160) {
-      userInput |= Down;
-      moving = true;
-    } else if (y < 100) {
-      userInput |= Up;
-      moving = true;
+    
+    if(y > 130) {
+      userInput = userInput | Down;
+    } else if (y < 70) {
+      userInput = userInput | Up;
     }
-    if(!moving) userInput = Fire;
+    
+    if((userInput == Nothing) && (y<75) && (y>135)) { // && (x<155) && (x>85)
+      userInput = Fire;
+      Serial.printf("fire %d, %d\n", x, y);
+    }
   }
 
   uint8_t getInput() {
