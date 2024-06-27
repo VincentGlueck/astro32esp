@@ -6,6 +6,7 @@ private:
   long nextTouch;
   int userInput;
   bool calibrated;
+  Point daisyPos;
 
 public:
   void clicked(lgfx::touch_point_t *tp) {
@@ -19,23 +20,13 @@ public:
       x = 330-abs(tp->x);
       y = 250-abs(tp->y);
     }
-    Serial.printf("input x: %d, y: %d\n", x, y);
+    Serial.printf("x: %d, y: %d, daisyX: %d, daisyY: %d\n", x, y, daisyPos.x, daisyPos.y);
     userInput = Nothing;
-    if(x > 120) {
-      userInput = Right;
-    } else if (x < 80) {
-      userInput = Left;
-    }
-    
-    if(y > 130) {
-      userInput = userInput | Down;
-    } else if (y < 70) {
-      userInput = userInput | Up;
-    }
-    
-    if((userInput == Nothing) && (y<75) && (y>135)) { // && (x<155) && (x>85)
+    if(x > 180) userInput = Right; else if (x < 80) userInput = Left;
+    if(y > 130) userInput = userInput | Down; else if (y < 70) userInput = userInput | Up;
+    bool nearDaisy = (abs((x-10-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 30);
+       if(nearDaisy) {
       userInput = Fire;
-      Serial.printf("fire %d, %d\n", x, y);
     }
   }
 
@@ -49,6 +40,10 @@ public:
 
   void setCalibrated(bool _cal) {
     calibrated = _cal;
+  }
+
+  void setDPos(Point _point) {
+    daisyPos = Point(_point.x, _point.y);
   }
 };
 
@@ -65,6 +60,10 @@ InputController::~InputController() {
   delete callback;
   delete screenTexts;
   free(tp);
+}
+
+void InputController::setDaisyPos(Point _point) {
+  callback->setDPos(_point);
 }
 
 uint8_t InputController::getInput() {

@@ -7,7 +7,6 @@
 #include "Scroller.h"
 
 LGFX lcd;
-SimpleScreenTexts* screenTexts;
 
 #define ORIENTATION 3 // 3=POWER left 1=POWER right
 #define USE_SERIAL_OUT
@@ -47,28 +46,34 @@ int daisyWithFenceDelay;
 long nextPossibleHorz = 0;
 long nextPossibleVert = 0;
 bool gameOver;
+LGFX_Sprite gameOverSprite;
 
 InputController* inputController;
 
 Title* title;
 BigDaisy* bigDaisy = NULL;
-Daisy* daisy;
-DaisyInPeaces *daisyInPeaces;
 AbstractSprite* life;
 Scroller* scroller;
-Egg* eggSprite[MAX_EGGS];
 GetReady* getReady;
+SimpleScreenTexts* screenTexts;
+
+// Daisy stuff (you)
+Egg* eggSprite[MAX_EGGS];
+Daisy* daisy;
+DaisyInPeaces *daisyInPeaces;
 Point lastDaisyPos;
 long daisyDelay;
 long eggDelay;
 
-uint8_t miscMode;
-uint8_t daisyMode = FLYING;
+// Game stuff
 int daisyLifes;
 int oldDaisyLifes;
 int score;
 int oldScore;
 int survived;
+
+uint8_t miscMode;
+uint8_t daisyMode = FLYING;
 
 LGFX_Sprite background;
 String getAllHeap(){
@@ -281,14 +286,14 @@ void handleDaisy() {
   if((input & Right) == Right) {
     if(millis() >= nextPossibleHorz) {
       if(daisyDx < 1) daisyDx++;
-      Serial.printf("daisyDx: %d\n", daisyDx);
+      // Serial.printf("daisyDx: %d\n", daisyDx);
       nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
   if((input & Left) == Left) {
     if(millis() >= nextPossibleHorz) {
       if(daisyDx > -2) daisyDx--;
-      Serial.printf("daisyDx: %d\n", daisyDx);
+      // Serial.printf("daisyDx: %d\n", daisyDx);
       nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
     }
   }
@@ -308,9 +313,22 @@ void handleDaisy() {
   int y = daisy->getPos().y;
   x += daisyDx;
   y += daisyDy;
-  if(x < 10) x = 10; else if (x > 170) x = 170;
-  if(y < 5) y = 5; else if (y > 107) y = 107;
+  if(x < 10) {
+    x = 10;
+    daisyDx = 0;
+  } else if (x > 170) {
+    x = 170;
+    daisyDx = 0;
+  }
+  if(y < 5) {
+    y = 5;
+    daisyDy = 0;
+  } else if (y > 107) {
+    y = 107;
+    daisyDy = 0;
+  }
   daisy->setPos(Point(x, y));
+  inputController->setDaisyPos(daisy->getPos());
   scroller->setDaisyPos(daisy->getPos(), daisyMode);
   
   if((input == Fire) && (eggs > 0) && (millis() > eggDelay)) {
@@ -329,6 +347,9 @@ void backToLife() {
   daisyLifes--;
   if(daisyLifes <= 0) {
     gameOver = true;
+    gameOverSprite.createSprite(99, 16);
+    gameOverSprite.setSwapBytes(true);
+    gameOverSprite.pushImage(0, 0, gameOverSprite.width(), gameOverSprite.height(), game_over);
     daisyDelay = millis() + 2000;
     return;
   }
@@ -437,7 +458,7 @@ void mainGame() {
     clearBackground();
     scroller->onTick();
     drawEggs();
-    if((globalCnt & 0xf) > 6) screenTexts->spriteBig("Game over", background, TFT_DARKGRAY);
+    if((globalCnt & 0xf) > 6) gameOverSprite.pushSprite(&background, (background.width()>>1)-(gameOverSprite.width()>>1), (background.height()>>1)-(gameOverSprite.height()>>1)-24, 0x0000);
     drawPlayfield();
     if(millis() > daisyDelay) {
       inputController->processed();
@@ -514,6 +535,7 @@ void mainGame() {
     if(survived > SCORE_FOR_SURVINING) {
       survived = 0;
       score++;
+      if(isGlobal(0x1f)) Serial.printf("survived: %d, score: %d\n", survived, score);
     }
   }
 }

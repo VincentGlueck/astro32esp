@@ -3,6 +3,7 @@
 
 #include "TheTouch.h"
 #include "SimpleScreenTexts.h"
+#include "AbstractSprite.h"
 
 #define FASTEST_REPEAT_MS 120
 #define KEEP_TOUCH_FOR_MS 80
@@ -23,17 +24,18 @@ public:
       virtual uint8_t getInput();
       virtual void processed();
       virtual void setCalibrated(bool _cal);
+      virtual void setDPos(Point _point);
   };
 
 public:
   InputController(LGFX _lcd);
   ~InputController();
   uint8_t getInput();
-  void debugAsAscii();
   void calibrate();
   void setCalibrated(bool _cal);
   void processed();
   void poll();
+  void setDaisyPos(Point _point);
 
 private:
   TheTouch* touch;
