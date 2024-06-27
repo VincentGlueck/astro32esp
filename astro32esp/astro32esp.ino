@@ -131,9 +131,8 @@ void hello() {
     subMode = 2;
   }
   inputController->poll();
-  if(inputController->getInput() != Nothing) {
+  if(inputController->isTouched()) {
     mode = MENU;
-    inputController->processed();
   }
 }
 
@@ -156,8 +155,7 @@ void calibrateTouch() {
   }
   drawPlayfield();
   inputController->poll();
-  if (inputController->getInput() != Nothing) {
-    inputController->processed();
+  if (inputController->isTouched()) {
     inputController->calibrate();
   }
 }
@@ -180,7 +178,7 @@ void menu() {
   drawPlayfield();
   if(millis() > daisyDelay) {
   inputController->poll();
-    if (inputController->getInput() != Nothing) {
+    if (inputController->isTouched()) {
       delete getReady;
       delete title;
       mode = IN_GAME;
@@ -463,8 +461,7 @@ void mainGame() {
     if(millis() > daisyDelay) {
       inputController->processed();
       inputController->poll();
-      if(inputController->getInput() != Nothing) {
-        inputController->processed();
+      if(inputController->isTouched()) {
         mode = MENU;
         daisyDelay = millis() + 1500;
       }

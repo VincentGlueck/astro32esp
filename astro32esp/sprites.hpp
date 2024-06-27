@@ -393,7 +393,7 @@ public:
         }
   #ifdef HUNTER_SHOOTS
         if((usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
-          if(rnd_diff(usr_c, 0x0f) == 0x0f) {
+          if(rnd_diff(usr_c, 0x07) == 0x07) {
             Point p;
             if(animCnt == 0) p = Point(pos.x-12, pos.y-16);
               else if (animCnt == 1) p = Point(pos.x-4, pos.y-24);

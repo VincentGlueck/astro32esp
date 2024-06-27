@@ -20,12 +20,12 @@ public:
       x = 330-abs(tp->x);
       y = 250-abs(tp->y);
     }
-    Serial.printf("x: %d, y: %d, daisyX: %d, daisyY: %d\n", x, y, daisyPos.x, daisyPos.y);
     userInput = Nothing;
     if(x > 180) userInput = Right; else if (x < 80) userInput = Left;
     if(y > 130) userInput = userInput | Down; else if (y < 70) userInput = userInput | Up;
-    bool nearDaisy = (abs((x-10-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 30);
-       if(nearDaisy) {
+    bool nearDaisy = (abs((x-50-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 30);
+    if(nearDaisy) {
+      //Serial.printf("x: %d, y: %d, daisyX: %d, daisyY: %d\n", x, y, daisyPos.x, daisyPos.y);
       userInput = Fire;
     }
   }
@@ -68,6 +68,12 @@ void InputController::setDaisyPos(Point _point) {
 
 uint8_t InputController::getInput() {
   return callback->getInput();
+}
+
+bool InputController::isTouched() {
+  bool flag = touch->get(tp);
+  processed();
+  return flag;
 }
 
 void InputController::processed() {

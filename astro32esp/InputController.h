@@ -36,6 +36,7 @@ public:
   void processed();
   void poll();
   void setDaisyPos(Point _point);
+  bool isTouched();
 
 private:
   TheTouch* touch;
