@@ -1,20 +1,13 @@
-#include "background.h"
-#include "sprites.hpp"
 #include "InputController.h"
 #include "Scroller.h"
 #include "MenuMode.hpp"
 #include "HelloMode.hpp"
 #include "GameMode.hpp"
 
-#include "StyledNumber.hpp"
-
 LGFX lcd;
 
-#define ORIENTATION 3  // 3=POWER left 1=POWER right
+#define ORIENTATION 3  // 3=POWER left 1=POWER right, you'll have to adjust InputController.cpp (calibration removed!)
 #define USE_SERIAL_OUT
-
-
-#define SHOW_BTN_TIME 20
 
 long lastMillis;
 
@@ -22,17 +15,10 @@ uint8_t mode = HELLO;
 
 InputController* inputController;
 
-BigDaisy* bigDaisy = NULL;
 Scroller* scroller;
 AbstractMode* gameMode;
 
 LGFX_Sprite background;
-
-String getAllHeap() {
-  char temp[300];
-  sprintf(temp, "Heap: Free:%i, Min:%i, Size:%i, Alloc:%i", ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(), ESP.getMaxAllocHeap());
-  return temp;
-}
 
 void drawPlayfield() {
   background.pushSprite(&lcd, SCREEN_LEFT, SCREEN_TOP);
@@ -78,7 +64,6 @@ void loop() {
         case IN_GAME: gameMode = new GameMode(&lcd, &background, inputController, scroller); break;
         default: break;
       }
-      Serial.printf("after switch to mode %d\n", mode, getAllHeap());
     } else {
       gameMode->onTick();
     }
