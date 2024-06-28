@@ -28,7 +28,7 @@ public:
   };
 
 public:
-  InputController(LGFX _lcd);
+  InputController(LGFX* _lcd);
   ~InputController();
   uint8_t getInput();
   void calibrate();
@@ -43,7 +43,7 @@ private:
   ControllerCallback* callback;
   lgfx::touch_point_t* tp;
   SimpleScreenTexts* screenTexts;
-  LGFX lcd;
+  LGFX* lcd;
 
 };
 

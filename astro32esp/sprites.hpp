@@ -27,7 +27,7 @@ enum SpriteTypes {
 
 class BigDaisy : public AbstractSprite {
 public:
-  BigDaisy() : AbstractSprite(BIGDAISY, 1 ) {
+  BigDaisy() : AbstractSprite(BIGDAISY, 1) {
     addSprite(SingleSprite(Dimension(121, 108), (short unsigned int*)big_daisy));
     keepInMemory = true;
     usr_dx = 8;
@@ -393,7 +393,7 @@ public:
         }
   #ifdef HUNTER_SHOOTS
         if((usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
-          if(rnd_diff(usr_c, 0x07) == 0x07) {
+          if(rnd_diff(usr_c, 0x0f) == 0x0f) {
             Point p;
             if(animCnt == 0) p = Point(pos.x-12, pos.y-16);
               else if (animCnt == 1) p = Point(pos.x-4, pos.y-24);

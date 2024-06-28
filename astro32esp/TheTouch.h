@@ -18,15 +18,15 @@ public:
       virtual void clicked(lgfx::touch_point_t* tp);
   };
 
-  TheTouch(LGFX _lgfx);
-  TheTouch(LGFX _lgfx, TouchCallback* _callback);
+  TheTouch(LGFX* _lgfx);
+  TheTouch(LGFX* _lgfx, TouchCallback* _callback);
   ~TheTouch();
   bool get(lgfx::touch_point_t *tp);
   bool getRaw(lgfx::touch_point_t *tp);
   void poll();
 
 private:
-  LGFX lcd;
+  LGFX* lcd;
   lgfx::touch_point_t *tp;
   TouchCallback *callback;
 

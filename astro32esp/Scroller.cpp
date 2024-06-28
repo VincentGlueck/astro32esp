@@ -1,6 +1,7 @@
 #include "Scroller.h"
+#include "MenuMode.hpp"
 
-Scroller::Scroller(LGFX_Sprite _background) {
+Scroller::Scroller(LGFX_Sprite* _background) {
   background = _background;
   for(int n=0; n<MAX_GROUND_SPRITES; n++) sprites[n] = NULL;
   daisyPos = Point(0xffff, 0xffff);
@@ -88,7 +89,7 @@ void Scroller::createDog(uint8_t idx) {
 void Scroller::createHunter(uint8_t idx) {
   if(waitHunter > 0) return;
   sprites[idx] = new Hunter();
-  sprites[idx]->setUsrAbc(0, 0, difficulty);
+  sprites[idx]->setUsrAbc(0, 0, (3-difficulty));
   waitHunter = MIN_NEXT_HUNTER + rnd_diff(0xf, difficulty);
   if(waitMill < 15) waitMill += 15;
   if(waitFence < 10) waitFence += 10;
@@ -137,7 +138,7 @@ void Scroller::onTick() {
           sprites[n]->onTick();
           sprites[n]->setDaisyPos(daisyPos, daisyMode);
           sprites[n]->setEggPos(eggPos);
-          sprites[n]->drawOnSprite(&background);
+          sprites[n]->drawOnSprite(background);
         }
       }
     }

@@ -47,7 +47,7 @@ public:
   }
 };
 
-InputController::InputController(LGFX _lcd) {
+InputController::InputController(LGFX* _lcd) {
   lcd = _lcd;
   tp = (lgfx::touch_point_t *)malloc(sizeof(lgfx::touch_point_t) << 1);
   screenTexts = new SimpleScreenTexts(lcd);
@@ -81,9 +81,9 @@ void InputController::processed() {
 }
 
 void InputController::calibrate() {
-  lcd.clearDisplay(TFT_BLACK);
-  lcd.calibrate();
-  lcd.clearDisplay(TFT_BLACK);
+  lcd->clearDisplay(TFT_BLACK);
+  lcd->calibrate();
+  lcd->clearDisplay(TFT_BLACK);
   screenTexts->bigText("Calibration", TFT_WHITE);
   screenTexts->smallText("done", TFT_WHITE);
   callback->setCalibrated(true);

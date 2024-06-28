@@ -1,5 +1,5 @@
-#ifndef _TITLE_H_
-#define _TITLE_H_
+#ifndef _TITLE_HPP_
+#define _TITLE_HPP_
 
 #include "AbstractSprite.h"
 #include "gfx.h"

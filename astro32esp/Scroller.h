@@ -17,7 +17,7 @@
 class Scroller {
 
 public:
-  Scroller(LGFX_Sprite _background);
+  Scroller(LGFX_Sprite* _background);
   ~Scroller();
   void onTick();
   void setDifficulty(uint8_t _difficulty);
@@ -28,7 +28,7 @@ public:
   AbstractSprite* getAbstractSprite(int n);
 
 private:
-  LGFX_Sprite background; 
+  LGFX_Sprite* background; 
   AbstractSprite* sprites[MAX_GROUND_SPRITES];
   void addGroundObject();
   void createMill(uint8_t idx);
