@@ -3,6 +3,7 @@
 
 #include "AbstractMode.h"
 #include "sprites.hpp"
+#include "StyledNumber.hpp"
 
 #define MAX_EGGS 4
 #define MIN_NEXT_DIRECTION_MS 400
@@ -13,6 +14,8 @@ private:
   Egg* eggSprite[MAX_EGGS];
   AbstractSprite* life;
   Daisy* daisy;
+  StyledNumber* eggsStyled;
+  StyledNumber* scoreStyled;
   DaisyInPeaces* daisyInPeaces;
   int daisyDx = 0;
   int daisyDy = 0;
@@ -52,10 +55,14 @@ private:
 
   void drawEggs() {
     if (eggs == oldEggs) return;
-    lcd->setTextColor(eggs >= 3 ? TFT_GREEN : (eggs < 1 ? TFT_RED : TFT_DARKCYAN));
-    lcd->fillRect(172, 226, 16, 8, TFT_BLACK);
-    lcd->drawString(String(eggs), 172, 226, 2);
+    eggsStyled->drawNumber(eggs, 170, 223);
     oldEggs = eggs;
+  }
+
+  void drawScore() {
+    if(oldScore == score) return;
+    scoreStyled->drawNumber(score, 250, 223);
+    oldScore = score;
   }
 
   uint8_t getFreeEggSlot() {
@@ -279,28 +286,31 @@ private:
 public:
   GameMode(LGFX* _lcd, LGFX_Sprite* _background, InputController* _inputController, Scroller* _scroller)
     : AbstractMode(_lcd, _background, _inputController, _scroller) {
+    currentMode = IN_GAME;
     daisy = new Daisy();
     life = new Life();
+    eggsStyled = new StyledNumber(lcd, 2);
+    scoreStyled = new StyledNumber(lcd, 5);
+    initAll();
     for (int n = 0; n < MAX_EGGS; n++) eggSprite[n] = NULL;
-    Serial.println("GameMode constructor");
   }
 
   ~GameMode() {
-    Serial.println("GameMode destructor");
+    
   }
 
   void killMode() {
-    Serial.println("GameMode killed");
     if (daisy != NULL) delete daisy;
     if (daisyInPeaces != NULL) delete daisyInPeaces;
     if (life != NULL) delete life;
     if (gameOverSprite != NULL) delete gameOverSprite;
+    if (eggsStyled != NULL) delete eggsStyled;
+    if (scoreStyled != NULL) delete scoreStyled;
   }
 
   void onTick() {
     if (!initialized) {
       restoreBg();
-      initAll();
       initialized = true;
     } else if (gameOver) {
       daisy->setStatus(VANISHED);
@@ -352,9 +362,11 @@ public:
       drawPlayfield();
       drawEggs();
       drawLifes();
+      drawScore();
       handleDaisyInput();
       handleDaisyFence();
       handleDaisyEggs();
+      score++;
       if (survived > SCORE_FOR_SURVINING) {
         survived = 0;
         score++;

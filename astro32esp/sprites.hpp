@@ -2,7 +2,7 @@
 #define _SPRITES_HPP_
 
 #include "AbstractSprite.h"
-#include "sprites_ground.h"
+#include "sprites_raw.h"
 #include "FastRandom.hpp"
 
 #define HUNTER_SHOOTS
@@ -22,7 +22,8 @@ enum SpriteTypes {
   EGG,
   WOLF,
   DAISY_IN_PEACES,
-  LIFE
+  LIFE,
+  NUMBERS
 };
 
 class BigDaisy : public AbstractSprite {
@@ -539,6 +540,26 @@ public:
       }
     }
   }
+};
+
+class Numbers : public AbstractSprite {
+public:  
+  Numbers() : AbstractSprite(NUMBERS, 10) {
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number0));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number1));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number2));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number3));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number4));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number5));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number6));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number7));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number8));
+    addSprite(SingleSprite(Dimension(7, 10), (short unsigned int*)number9));
+  }
+
+  void onTick() {
+  }
+
 };
 
 #endif

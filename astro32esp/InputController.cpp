@@ -23,7 +23,7 @@ public:
     userInput = Nothing;
     if(x > 180) userInput = Right; else if (x < 80) userInput = Left;
     if(y > 130) userInput = userInput | Down; else if (y < 70) userInput = userInput | Up;
-    bool nearDaisy = (abs((x-50-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 30);
+    bool nearDaisy = (abs((x-40-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 30);
     if(nearDaisy) {
       //Serial.printf("x: %d, y: %d, daisyX: %d, daisyY: %d\n", x, y, daisyPos.x, daisyPos.y);
       userInput = Fire;

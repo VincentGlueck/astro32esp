@@ -9,7 +9,6 @@
 
 enum GameModes {
   HELLO,
-  CALIBRATE,
   MENU,
   IN_GAME
 };

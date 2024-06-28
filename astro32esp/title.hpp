@@ -28,9 +28,6 @@ public:
     tick = 30;
   }
 
-  void setDaisyPos(Point _p) { }
-  void setEggPos(Point _p) { }
-
   void onTick() {
     tick--;
     if(tick < 1) tick = 60;

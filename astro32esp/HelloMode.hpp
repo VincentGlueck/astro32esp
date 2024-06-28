@@ -13,19 +13,13 @@ private:
 public:
   HelloMode(LGFX* _lcd, LGFX_Sprite* _background, InputController* _inputController)
     : AbstractMode(_lcd, _background, _inputController) {
-    Serial.println("HelloMode constructor");
     currentMode = HELLO;
     subMode = 0;
     screenTexts = new SimpleScreenTexts(lcd);
   }
 
-  ~HelloMode() {
-    killMode();
-  }
-
   void killMode() {
-    Serial.println("HelloMode killed");
-    delete screenTexts;
+    if (screenTexts != NULL) delete screenTexts;
   }
 
   void onTick() {

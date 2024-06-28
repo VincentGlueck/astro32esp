@@ -14,21 +14,15 @@ private:
 public:
   MenuMode(LGFX* _lcd, LGFX_Sprite* _background, InputController* _inputController, Scroller* _scroller)
     : AbstractMode(_lcd, _background, _inputController, _scroller) {
-    Serial.println("MenuMode constructor");
     currentMode = MENU;
     title = new Title();
     getReady = new GetReady();
     menuPollDelay = millis() + 100;
   }
 
-  ~MenuMode() {
-    
-  }
-
   void killMode() {
-    Serial.println("MenuMode killed");
-    delete title;
-    delete getReady;
+    if(title != NULL) delete title;
+    if(getReady != NULL) delete getReady;
   }
 
   void onTick() {

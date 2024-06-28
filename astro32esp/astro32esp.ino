@@ -6,6 +6,8 @@
 #include "HelloMode.hpp"
 #include "GameMode.hpp"
 
+#include "StyledNumber.hpp"
+
 LGFX lcd;
 
 #define ORIENTATION 3  // 3=POWER left 1=POWER right
@@ -44,33 +46,6 @@ bool initBackground() {
   return true;
 }
 
-
-void calibrateTouch() {
-  /*
-  if (modeDone != mode) {
-    restoreBackground->restoreBg();
-    bigDaisy = new BigDaisy();
-    bigDaisy->setPos(Point(-120, 40));
-    modeDone = mode;
-    miscMode = 0;
-    nextMode = millis() + 5000;
-  }
-  restoreBackground->clearPlayfield();
-  bigDaisy->drawOnSprite(&background);
-  bigDaisy->onTick();
-  //screenTexts->spriteBig("Calibrate touch?", background, TFT_WHITE);
-  if ((millis() + 3500) > nextMode) {
-    //screenTexts->spriteSmall("Touch anywhere...", background);
-    miscMode = 1;
-  }
-  drawPlayfield();
-  inputController->poll();
-  if (inputController->isTouched()) {
-    inputController->calibrate();
-  }
-  */
-}
-
 void setup() {
   Serial.begin(115200);
   while (!Serial) delay(10);
@@ -91,36 +66,23 @@ void setup() {
 }
 
 void loop() {
-  // testSprite();
   long t = millis();
-  if (mode == CALIBRATE) mode = MENU;  // skip calibrate
-  switch (mode) {
-    case HELLO: break;
-    case CALIBRATE: calibrateTouch(); break;
-    case MENU: break;
-    case IN_GAME: break;
-    default:
-      break;
-  }
   if (gameMode != NULL) {
     if(mode != gameMode->getNextMode()) {
       mode = gameMode->getNextMode();
       gameMode->killMode();
       delete gameMode;
-      Serial.printf("Switch game mode to %d\n", mode);
-      if (mode == CALIBRATE) mode = MENU;  // skip calibrate
       switch (mode) {
         case HELLO: gameMode = new HelloMode(&lcd, &background, inputController); break;
-        case CALIBRATE: break;
         case MENU: gameMode = new MenuMode(&lcd, &background, inputController, scroller); break;
         case IN_GAME: gameMode = new GameMode(&lcd, &background, inputController, scroller); break;
         default: break;
       }
-      Serial.println(getAllHeap());
+      Serial.printf("after switch to mode %d\n", mode, getAllHeap());
     } else {
       gameMode->onTick();
     }
-  } else gameMode = new HelloMode(&lcd, &background, inputController);
+  } else gameMode = new HelloMode(&lcd, &background, inputController); // one(!) mode should be created
   do {
     yield();
   } while ((millis() - 16) < t);
