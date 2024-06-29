@@ -364,8 +364,8 @@ public:
     addSprite(SingleSprite(Dimension(21, 35), (short unsigned int*)man05, Point(7, -4)));
     addSprite(SingleSprite(Dimension(29, 31), (short unsigned int*)man06, Point(7, 0)));
     addSprite(SingleSprite(Dimension(25, 32), (short unsigned int*)man07, Point(5, 0)));
-    addSprite(SingleSprite(Dimension(31, 37), (short unsigned int*)man08, Point(2, -4)));
-    addSprite(SingleSprite(Dimension(44, 11), (short unsigned int*)man09, Point(0, 20)));
+    addSprite(SingleSprite(Dimension(31, 37), (short unsigned int*)man08, Point(2, -6)));
+    addSprite(SingleSprite(Dimension(44, 11), (short unsigned int*)man09, Point(0, 22)));
     pos.y = 119;
     pos.x = 310;
   }

@@ -8,12 +8,12 @@
 #define FASTEST_REPEAT_MS 120
 #define KEEP_TOUCH_FOR_MS 80
 
-enum UserInput { Nothing = 0,
-                 Up = 1,
-                 Left = 2,
-                 Right = 4,
-                 Down = 8,
-                 Fire = 16
+enum UserInput { T_NOTHING = 0,
+                 T_UP = 1,
+                 T_LEFT = 2,
+                 T_RIGHT = 4,
+                 T_DOWN = 8,
+                 T_FIRE = 16
 };
 
 class InputController {
@@ -24,8 +24,9 @@ public:
       virtual uint8_t getInput();
       virtual void processed();
       virtual void setCalibrated(bool _cal);
-      virtual void setDPos(Point _point);
-  };
+      virtual void setPPos(Point _point);
+      virtual Point getLatestTouch();
+    };
 
 public:
   InputController(LGFX* _lcd);
@@ -35,8 +36,9 @@ public:
   void setCalibrated(bool _cal);
   void processed();
   void poll();
-  void setDaisyPos(Point _point);
+  void setPlayerPos(Point _point);
   bool isTouched();
+  Point getLatestTouch();
 
 private:
   TheTouch* touch;

@@ -6,6 +6,11 @@
 
 // INTENDED TO BE USED WITH ESP32-2432S028 2.8inch ALIExpress boards (sold in 2023/24)
 
+struct Point {
+  int x;
+  int y;
+};
+
 class LGFX : public lgfx::LGFX_Device {
 
   lgfx::Panel_ST7789    _panel_instance;

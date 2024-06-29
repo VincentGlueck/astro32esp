@@ -8,6 +8,7 @@
 #define MAX_EGGS 4
 #define MIN_NEXT_DIRECTION_MS 400
 #define SCORE_FOR_SURVINING 200
+#define DEBUG_TOUCH_POS
 
 class GameMode : public AbstractMode {
 private:
@@ -79,27 +80,25 @@ private:
 
   void handleDaisy() {
     uint8_t input = inputController->getInput();
-    if ((input & Right) == Right) {
+    if ((input & T_RIGHT) == T_RIGHT) {
       if (millis() >= nextPossibleHorz) {
         if (daisyDx < 1) daisyDx++;
-        Serial.printf("daisyDx: %d\n", daisyDx);
         nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
       }
     }
-    if ((input & Left) == Left) {
+    if ((input & T_LEFT) == T_LEFT) {
       if (millis() >= nextPossibleHorz) {
         if (daisyDx > -2) daisyDx--;
-        // Serial.printf("daisyDx: %d\n", daisyDx);
         nextPossibleHorz = millis() + MIN_NEXT_DIRECTION_MS;
       }
     }
-    if ((input & Up) == Up) {
+    if ((input & T_UP) == T_UP) {
       if ((millis() >= nextPossibleVert) || (daisyDy != 0)) {
         if (daisyDy > -2) daisyDy--;
         nextPossibleVert = millis() + MIN_NEXT_DIRECTION_MS;
       }
     }
-    if ((input & Down) != 0) {
+    if ((input & T_DOWN) != 0) {
       if ((millis() >= nextPossibleVert) || (daisyDy != 0)) {
         if (daisyDy < 1) daisyDy++;
         nextPossibleVert = millis() + MIN_NEXT_DIRECTION_MS;
@@ -124,10 +123,9 @@ private:
       daisyDy = 0;
     }
     daisy->setPos(Point(x, y));
-    inputController->setDaisyPos(daisy->getPos());
     scroller->setDaisyPos(daisy->getPos(), daisyMode);
 
-    if ((input == Fire) && (eggs > 0) && (millis() > eggDelay)) {
+    if ((input == T_FIRE) && (eggs > 0) && (millis() > eggDelay)) {
       eggs--;
       eggDelay = millis() + 1500;
       int idx = getFreeEggSlot();
@@ -257,6 +255,7 @@ private:
           eggHit |= checkEggHit(DOG, n, 6);
           eggHit |= checkEggHit(HUNTER, n, 6);
           if (eggHit) {
+            score+=2;
             eggSprite[n] = NULL;
           }
         }
@@ -306,6 +305,7 @@ public:
     if (gameOverSprite != NULL) delete gameOverSprite;
     if (eggsStyled != NULL) delete eggsStyled;
     if (scoreStyled != NULL) delete scoreStyled;
+    Serial.printf("Game killed, nextMode: %d\n", currentMode);
   }
 
   void onTick() {
@@ -330,6 +330,7 @@ public:
     } else {
       clearPlayfield();
       scroller->onTick();
+      inputController->setPlayerPos(daisy->getPos());
       if (daisyMode == FLYING || daisyMode == PROTECTED) {
         if (daisyMode == PROTECTED) daisy->setStatus((isGlobal(2) ? NORMAL : INVISIBLE));
         daisyFlying();
@@ -359,14 +360,18 @@ public:
       for (int n = 0; n < MAX_EGGS; n++)
         if (eggSprite[n] != NULL) eggSprite[n]->drawOnSprite(background);
       handleDaisy();
+#ifdef DEBUG_TOUCH_POS
+      Point p = inputController->getLatestTouch();
+      if(p.x != -1 && p.y != -1) background->fillCircle(p.x-10, p.y-10, 21, TFT_BLUE);
+#endif      
+      handleDaisyInput();
+      handleDaisyEggs();
+      handleDaisyFence();
+      drawScore();
       drawPlayfield();
       drawEggs();
       drawLifes();
-      drawScore();
-      handleDaisyInput();
-      handleDaisyFence();
-      handleDaisyEggs();
-      score++;
+      survived++;
       if (survived > SCORE_FOR_SURVINING) {
         survived = 0;
         score++;

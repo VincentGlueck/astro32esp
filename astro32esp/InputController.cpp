@@ -1,33 +1,36 @@
 #include "InputController.h"
 
 class LocalControllerCallback : public InputController::ControllerCallback {
-
 private:
   long nextTouch;
   int userInput;
   bool calibrated;
   Point daisyPos;
+  Point latestTouch;
+  long clearLatest = 0;
+  int x;
+  int y;
 
 public:
   void clicked(lgfx::touch_point_t *tp) {
     nextTouch = millis() + FASTEST_REPEAT_MS;
-    int x;
-    int y;
     if(calibrated) {
       x = tp->x;
       y = tp->y;
     } else {
       x = 330-abs(tp->x);
-      y = 250-abs(tp->y);
+      y = 235-abs(tp->y);
     }
-    userInput = Nothing;
-    if(x > 180) userInput = Right; else if (x < 80) userInput = Left;
-    if(y > 130) userInput = userInput | Down; else if (y < 70) userInput = userInput | Up;
-    bool nearDaisy = (abs((x-40-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 30);
+    userInput = T_NOTHING;
+    if(x > daisyPos.x+50) userInput = T_RIGHT; else if (x < (daisyPos.x-20)) userInput = T_LEFT;
+    if(y > daisyPos.y+80) userInput = userInput | T_DOWN; else if (y < daisyPos.y+15) userInput = userInput | T_UP;
+    bool nearDaisy = (abs((x-40-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 40);
     if(nearDaisy) {
-      //Serial.printf("x: %d, y: %d, daisyX: %d, daisyY: %d\n", x, y, daisyPos.x, daisyPos.y);
-      userInput = Fire;
+      userInput = T_FIRE;
+    } else {
+      Serial.printf("MISS -> x: %d, y: %d, daisyX: %d, daisyY: %d\n", x, y, daisyPos.x, daisyPos.y);
     }
+    latestTouch = (userInput != T_NOTHING) ? Point(x, y) : Point(-1, -1);
   }
 
   uint8_t getInput() {
@@ -35,15 +38,23 @@ public:
   }
 
   void processed() {
-    userInput = 0;
+    userInput = T_NOTHING;
   }
 
   void setCalibrated(bool _cal) {
     calibrated = _cal;
   }
 
-  void setDPos(Point _point) {
+  void setPPos(Point _point) {
     daisyPos = Point(_point.x, _point.y);
+  }
+
+  Point getLatestTouch() {
+    if(millis() > clearLatest) {
+      clearLatest = millis() + 500;
+      latestTouch = Point(-1, -1);
+    }
+    return latestTouch;
   }
 };
 
@@ -62,8 +73,8 @@ InputController::~InputController() {
   free(tp);
 }
 
-void InputController::setDaisyPos(Point _point) {
-  callback->setDPos(_point);
+void InputController::setPlayerPos(Point _point) {
+  callback->setPPos(_point);
 }
 
 uint8_t InputController::getInput() {
@@ -78,6 +89,10 @@ bool InputController::isTouched() {
 
 void InputController::processed() {
   callback->processed();
+}
+
+Point InputController::getLatestTouch() {
+  return callback->getLatestTouch();
 }
 
 void InputController::calibrate() {

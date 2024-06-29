@@ -28,6 +28,10 @@ public:
   void drawNumber(int number, int posX, int posY) {
     numberSprite.fillRect(0, 0, numberSprite.width(), numberSprite.height(), numberBgColor);
     int x = (maxDigits-1)*8;
+    if(number == 0) {
+      digits->setAnimCnt(0);
+      numberSprite.pushSprite(lcd, posX, posY);
+    }
     for (int digit = number; digit != 0; digit /= 10) {
       int last_digit = digit % 10;
       digits->setAnimCnt(last_digit);

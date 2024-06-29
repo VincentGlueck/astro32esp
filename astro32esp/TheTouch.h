@@ -16,6 +16,7 @@ public:
   class TouchCallback {
     public:
       virtual void clicked(lgfx::touch_point_t* tp);
+      virtual Point getLatestTouch();
   };
 
   TheTouch(LGFX* _lgfx);
