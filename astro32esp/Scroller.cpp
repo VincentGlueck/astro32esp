@@ -104,7 +104,7 @@ void Scroller::createWolf(uint8_t idx) {
 void Scroller::addGroundObject() {
   int idx = getFreeSlot();
   if(idx == -1) {
-    Serial.println("No free slot!");
+    Serial.println("Out of slots!");
     return;
   }
   int what = rnd(7);
@@ -182,20 +182,20 @@ AbstractSprite* Scroller::getAbstractSprite(int n) {
 
 int Scroller::getCollisionIdx(int type, AbstractSprite* sprite) {
   for(int n=0; n<MAX_GROUND_SPRITES; n++) {
-    if(sprites[n] != NULL) {
+    if((sprites[n] != NULL) && (sprites[n]->getStatus() != COLLIDED)) {
       if(sprites[n]->getType() == type && isCollided(sprite->getPos(), sprite->getDimension(sprite->getAnimCnt()), sprites[n]->getPos(), sprites[n]->getDimension(sprites[n]->getAnimCnt()))) {
          if(sprites[n]->getType() == MILL) {
           sprites[n]->setUsrFlag0(true);
           sprites[n]->setAnimCnt(3);
-        } else if((sprites[n]->getType() == CORN) && (sprites[n]->getStatus() != COLLIDED)) {
+        } else if(sprites[n]->getType() == CORN) {
           sprites[n]->setStatus(COLLIDED);
-        } else if((sprites[n]->getType() == FENCE) && (sprites[n]->getStatus() != COLLIDED)) {
+        } else if(sprites[n]->getType() == FENCE) {
           sprites[n]->setStatus(COLLIDED);
         } else if(sprites[n]->getType() == DOG) {
           sprites[n]->setAnimCnt(4);
           sprites[n]->setUsrFlag0(false);
           sprites[n]->setUsrFlag1(true);
-        } else if((sprites[n]->getType() == WOLF) && (sprites[n]->getStatus() != COLLIDED)) {
+        } else if(sprites[n]->getType() == WOLF) {
           sprites[n]->setStatus(COLLIDED);
         }
         return n;

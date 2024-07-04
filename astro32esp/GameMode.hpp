@@ -8,7 +8,7 @@
 #define MAX_EGGS 4
 #define MIN_NEXT_DIRECTION_MS 400
 #define SCORE_FOR_SURVINING 200
-#define DEBUG_TOUCH_POS
+// #define DEBUG_TOUCH_POS
 
 class GameMode : public AbstractMode {
 private:
@@ -156,17 +156,17 @@ private:
 
   void daisyFlying() {
     if (daisy->getStatus() == VANISHED) return;
+    handleDaisy();
     if (daisy->getStatus() == NORMAL) daisy->drawOnSprite(background);
     daisy->onTick();
     if (daisy->getStatus() != VANISHED) {
       if (scroller->getCollisionIdx(BULLET, daisy) >= 0) {
         daisyMode = HIT_BY_BULLET;
         daisyInPeaces = new DaisyInPeaces(daisy->getPos().x, daisy->getPos().y);
-      }
-      if (scroller->getCollisionIdx(DOG, daisy) >= 0) daisyMode = ATE_BY_DOG;
-      if (scroller->getCollisionIdx(MILL, daisy) >= 0) daisyMode = MILL_CRASH;
-      if (scroller->getCollisionIdx(WOLF, daisy) >= 0) daisyMode = WOLF_CRASH;
-      if (scroller->getCollisionIdx(FENCE, daisy) >= 0) {
+      } else if (scroller->getCollisionIdx(DOG, daisy) >= 0) daisyMode = ATE_BY_DOG;
+      else if (scroller->getCollisionIdx(MILL, daisy) >= 0) daisyMode = MILL_CRASH;
+      else if (scroller->getCollisionIdx(WOLF, daisy) >= 0) daisyMode = WOLF_CRASH;
+      else if (scroller->getCollisionIdx(FENCE, daisy) >= 0) {
         daisyWithFenceDelay = 4;
         daisyFenceCnt = 200;
       } else if ((scroller->getCollisionIdx(CORN, daisy) >= 0) && (waitCorn <= 0)) {
@@ -359,7 +359,6 @@ public:
       }
       for (int n = 0; n < MAX_EGGS; n++)
         if (eggSprite[n] != NULL) eggSprite[n]->drawOnSprite(background);
-      handleDaisy();
 #ifdef DEBUG_TOUCH_POS
       Point p = inputController->getLatestTouch();
       if(p.x != -1 && p.y != -1) background->fillCircle(p.x-10, p.y-10, 21, TFT_BLUE);
@@ -375,7 +374,6 @@ public:
       if (survived > SCORE_FOR_SURVINING) {
         survived = 0;
         score++;
-        if (isGlobal(0x1f)) Serial.printf("survived: %d, score: %d\n", survived, score);
       }
     }
     globalCnt++;

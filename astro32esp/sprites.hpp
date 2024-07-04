@@ -272,13 +272,14 @@ public:
     if(pos.x < -40) {
       status = VANISHED;
       pos.x = 0xffff;
+      return;
     }
     if(status == COLLIDED) {
       if((tick & 7) == 7) {
         if(animCnt < (animations-1)) animCnt++;
       }
     } else {
-      if(usr_flag0 && !usr_flag1 && ((tick & 0xf) == 0xf)) {
+      if((usr_flag0 && !usr_flag1) && ((tick & 0xf) == 0xf)) {
         animCnt++;
         if(animCnt > 3) {
           animCnt = 0;
@@ -288,12 +289,10 @@ public:
         if(animCnt < 5) animCnt++;
       } else if(!usr_flag0 && ((tick & 3) == 3) && (rnd(3) == 3)) {
         int dxDaisyX = pos.x - daisyPos.x;
-        int dxDaisyY = 89-(abs(pos.y - daisyPos.y));
-        if((abs(dxDaisyX) < 22)) {
-          if(dxDaisyY > 50) {
-            usr_flag0 = true;
-            animCnt = 1;
-          }
+        int dyDaisyY = 89-(abs(pos.y - daisyPos.y));
+        if(status != COLLIDED && (abs(dxDaisyX) < 22) && (dyDaisyY > 50)) {
+          usr_flag0 = true;
+          animCnt = 1;
         }
       }
     }
@@ -393,7 +392,7 @@ public:
           }
         }
   #ifdef HUNTER_SHOOTS
-        if((usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
+        if((status != COLLIDED) && (usr_a <= 0) && (daisyPos.x != 0xffff) && (tick & 0x07) == 0x07) {
           if(rnd_diff(usr_c, 0x0f) == 0x0f) {
             Point p;
             if(animCnt == 0) p = Point(pos.x-12, pos.y-16);

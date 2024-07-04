@@ -27,8 +27,6 @@ public:
     bool nearDaisy = (abs((x-40-daisyPos.x)) < 30) && (abs((y-50-daisyPos.y)) < 40);
     if(nearDaisy) {
       userInput = T_FIRE;
-    } else {
-      Serial.printf("MISS -> x: %d, y: %d, daisyX: %d, daisyY: %d\n", x, y, daisyPos.x, daisyPos.y);
     }
     latestTouch = (userInput != T_NOTHING) ? Point(x, y) : Point(-1, -1);
   }
