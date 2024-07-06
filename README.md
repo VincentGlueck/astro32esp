@@ -21,6 +21,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ```
+Uses TheTouch, gfx lgfx_user.h ("The cheap yellow board from ALIExpress")
+```
+
+```
+Inspired by Space Quest 5(tm)
+https://de.wikipedia.org/wiki/Space_Quest
+```
+
+
+```
 Numbers 0-9 ~(7x10px)
 Author: ahmadmanga @ https://opengameart.org/
 ```
