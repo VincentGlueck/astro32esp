@@ -3,10 +3,12 @@ The "good old AstroMcChicken"
 
 ![the_game](https://github.com/VincentGlueck/astro32esp/assets/139572548/c49f71e1-4c61-4e80-a667-5ae92325dd56)
 
-```
-Uses TheTouch, GFX library based on https://github.com/lovyan03/LovyanGFX
-See lgfx_user.h for tuning
+Uses
 
+https://github.com/lovyan03/LovyanGFX
+
+```
+See lgfx_user.h for tuning
 ```
 
 ```
