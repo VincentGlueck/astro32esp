@@ -1,6 +1,8 @@
 # astro32esp
 The "good old AstroMcChicken"
 
+![the_game](https://github.com/VincentGlueck/astro32esp/assets/139572548/c49f71e1-4c61-4e80-a667-5ae92325dd56)
+
 ```
 Permission is hereby granted, free of charge, to any person obtaining a copy of this
 software and associated documentation files (the “Software”), to deal in the Software
